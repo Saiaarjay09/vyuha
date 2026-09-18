@@ -80,3 +80,58 @@ def test_frame_helper_applies_publication_lag():
     df = pd.DataFrame({"date": pd.to_datetime(["2026-01-31"]), "value": [7.0]})
     obs = observations_from_frame(df, "S", "src", publication_lag=dt.timedelta(days=12))
     assert obs[0].available_at.date() == dt.date(2026, 2, 12)
+
+
+# ------------------------------------------------------- ingest module shape
+
+
+def test_rbi_rate_map_covers_the_policy_corridor():
+    from vyuha.ingest.rbi import _RATE_MAP
+
+    ids = {v[0] for v in _RATE_MAP.values()}
+    assert {"REPO_RATE", "CRR", "SLR", "USDINR"} <= ids
+
+
+def test_rbi_parser_rejects_a_changed_layout():
+    import pytest as _pytest
+
+    from vyuha.ingest.rbi import _tokens
+
+    with _pytest.raises(RuntimeError, match="layout changed"):
+        _tokens("<html><body>nothing useful here</body></html>")
+
+
+def test_catalogue_entries_are_internally_consistent():
+    """Anything claiming WORKING must carry a verification date."""
+    from vyuha.ingest.catalogue import CATALOGUE, Status
+
+    for s in CATALOGUE:
+        if s.status is Status.WORKING:
+            assert s.last_verified, f"{s.key} claims WORKING with no last_verified"
+        assert s.url.startswith("http"), f"{s.key} has no usable url"
+        assert s.description
+
+
+def test_blocked_sources_explain_themselves():
+    from vyuha.ingest.catalogue import CATALOGUE, Status
+
+    for s in CATALOGUE:
+        if s.status is Status.BLOCKED:
+            assert "BLOCKED" in s.notes or "blocked" in s.notes.lower(), (
+                f"{s.key} is BLOCKED but does not say why"
+            )
+
+
+def test_series_ids_are_unique_per_source():
+    from vyuha.ingest.catalogue import all_series
+
+    assert len(all_series()) > 50
+
+
+def test_api_routes_classify_correctly():
+    from vyuha.api.server import classify
+
+    assert classify("Will the Nifty fall below 23000?") == "council"
+    assert classify("what is the repo rate") == "data"
+    assert classify("run a stress test") == "risk"
+    assert classify("compute VaR on nifty") == "risk"

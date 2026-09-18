@@ -200,14 +200,30 @@ CATALOGUE: tuple[SourceSpec, ...] = (
 
     # -------------------------------------------------------- MACRO / RBI ----
     SourceSpec(
+        "rbi_current_rates", "RBI Current Rates (homepage block)", Domain.MACRO,
+        "https://www.rbi.org.in/",
+        "Policy repo, SDF, MSF, bank rate, reverse repo, CRR, SLR and RBI "
+        "reference FX rates -- the whole current-rates block in one fetch.",
+        Status.WORKING, "on change", "immediate", "RBI - public",
+        series=("REPO_RATE", "SDF_RATE", "MSF_RATE", "BANK_RATE",
+                "REVERSE_REPO_RATE", "CRR", "SLR", "USDINR", "GBPINR",
+                "EURINR", "JPYINR_100"),
+        last_verified="2026-09-18",
+        notes="Highest value per unit of parsing effort of anything RBI publishes. "
+              "Current levels only, not a history -- for the path of policy you need "
+              "the MPC statement archive. Requires a browser User-Agent.",
+    ),
+    SourceSpec(
         "rbi_dbie", "RBI Database on Indian Economy", Domain.MACRO,
         "https://data.rbi.org.in/",
         "The canonical source for Indian monetary, banking, external and fiscal data.",
         Status.PLANNED, "varies", "varies", "RBI - public",
         series=("REPO_RATE", "CRR", "SLR", "M3_YOY", "BANK_CREDIT_YOY",
                 "FX_RESERVES", "CAD_PCT_GDP", "GSEC_10Y"),
-        notes="Deepest single macro source for India. Bulk download rather than a "
-              "clean API; parsing is the work.",
+        notes="Deepest single macro source for India, but data.rbi.org.in is an "
+              "Angular single-page app with no documented data API (confirmed "
+              "2026-09-18) -- the bundle would have to be reverse-engineered. "
+              "Use rbi_current_rates for policy rates today.",
     ),
     SourceSpec(
         "rbi_policy", "RBI Policy Statements & MPC Minutes", Domain.POLICY,
@@ -223,8 +239,11 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         "CPI headline, core, rural/urban split, and component-level indices.",
         Status.PLANNED, "monthly", "~12 days", "MOSPI - public / open",
         series=("CPI_COMBINED_YOY", "CPI_CORE_YOY", "CPI_FOOD_YOY"),
-        notes="Released ~12th of the following month. The lag is the whole reason the "
-              "store is bitemporal.",
+        notes="Released ~12th of the following month -- the lag is the whole reason the "
+              "store is bitemporal. mospi.gov.in is a JS shell and api.mospi.gov.in "
+              "serves an UNCONFIGURED stock Swagger UI still pointing at "
+              "petstore.swagger.io (checked 2026-09-18), so there is no MOSPI API. "
+              "Route via data.gov.in, or parse the monthly press-release PDFs.",
     ),
     SourceSpec(
         "mospi_iip", "MOSPI Index of Industrial Production", Domain.MACRO,
@@ -246,9 +265,14 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         "data_gov_in", "data.gov.in Open Government Data", Domain.MACRO,
         "https://api.data.gov.in/resource/",
         "Thousands of government datasets behind one free API key.",
-        Status.PLANNED, "varies", "varies", "Government Open Data Licence - India",
-        needs_key=True,
-        notes="Genuinely open licence -- the cleanest redistribution rights of anything here.",
+        Status.WORKING, "varies", "varies", "Government Open Data Licence - India",
+        needs_key=True, last_verified="2026-09-18",
+        series=("CPI_ARCHIVE", "IIP_ARCHIVE", "POWER_SUPPLY_POSITION"),
+        notes="Genuinely open licence -- the cleanest redistribution rights of anything "
+              "here, and ~288,000 resources. Two caveats: the API's own `q` search "
+              "parameter is silently ignored, so search_catalogue() pages and indexes "
+              "locally; and most CPI/IIP resources are ARCHIVAL (ending 2014-2017) "
+              "rather than the current monthly series.",
     ),
 
     # ------------------------------------------------ FIXED INCOME / FX ----
@@ -281,11 +305,14 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         "grid_india_power", "Grid-India (POSOCO) Power Demand", Domain.ALT,
         "https://report.grid-india.in/",
         "Daily and block-wise all-India electricity generation and demand.",
-        Status.PLANNED, "daily", "1 day", "Grid-India - public",
-        series=("POWER_DEMAND_MU", "PEAK_DEMAND_MW"),
-        notes="The best high-frequency proxy for real economic activity in India. "
-              "Daily, barely revised, and available six weeks before the IIP print "
-              "it anticipates. Needs weather and seasonality adjustment to be useful.",
+        Status.BLOCKED, "daily", "1 day", "Grid-India - public",
+        series=("POWER_DEMAND_MU", "PEAK_DEMAND_MW"), last_verified="2026-09-18",
+        notes="BLOCKED: report.grid-india.in no longer resolves (NXDOMAIN, checked "
+              "2026-09-18) and posoco.in returns 502. Still the best high-frequency "
+              "proxy for real activity in India -- daily, barely revised, six weeks "
+              "ahead of the IIP print it anticipates -- so power.grid_india_available() "
+              "probes live and the module starts working again if the host returns. "
+              "npp.gov.in is reachable as an alternative route.",
     ),
     SourceSpec(
         "npci_upi", "NPCI UPI Statistics", Domain.ALT,
