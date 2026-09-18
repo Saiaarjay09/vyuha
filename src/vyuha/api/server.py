@@ -407,7 +407,30 @@ def _answer_council(req: AskRequest, emit=None) -> dict:
                         "members": [p.name for p in council.personas],
                         "models": council._model_for})
 
-    verdict = council.run(q, packet)
+    done = {"n": 0}
+    total = len(council.personas)
+
+    def on_member(fc) -> None:
+        done["n"] += 1
+        if emit:
+            emit("member", {
+                "name": fc.member, "probability": fc.probability,
+                "ok": fc.parse_ok, "done": done["n"], "total": total,
+                "reasoning": fc.reasoning[:400],
+            })
+
+    def on_round(rnd: int, v) -> None:
+        # A preliminary answer after round 0 lands in about a quarter of the
+        # time the full deliberation takes. Showing it, clearly labelled, beats
+        # a spinner -- and the number rarely moves much afterwards.
+        if emit:
+            emit("preliminary", {
+                "round": rnd, "probability": v.probability,
+                "dispersion": v.dispersion, "n_members": v.n_members,
+            })
+        done["n"] = 0
+
+    verdict = council.run(q, packet, on_member=on_member, on_round=on_round)
 
     families = {m.split(":")[0] for m in council._model_for.values()}
     return {

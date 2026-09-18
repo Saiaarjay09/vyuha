@@ -64,28 +64,46 @@ HOW TO USE IT
        Stress test against a taper tantrum
 
 
+HOW LONG IT TAKES
+--------------------------------------------------------------------------------
+
+  A figure lookup ("what is the repo rate") is near-instant.
+
+  A forecast question takes roughly 20-25 seconds, because ten advisors each
+  read the data and answer, and then deliberate a second time if they
+  disagreed. A progress line tells you how many have replied.
+
+  If they agree in the first round, the second is skipped automatically -
+  there is nothing to deliberate about - and the answer arrives sooner.
+
+
 READING THE ANSWER
 --------------------------------------------------------------------------------
 
-  You get a plain-English verdict first - "Unlikely", "Too close to call",
-  "Likely" - and the percentage behind it.
+  The answer opens with a verdict - "Unlikely", "Too close to call", "Likely" -
+  the percentage, and then ONE PARAGRAPH that tells you the whole thing: how
+  confident the council is, how much the advisors disagreed, the range of their
+  estimates, who dissented most strongly, and which figures they used.
 
-  Under that, a line about whether the advisors agreed:
+  If you only read one thing, read that paragraph.
 
-    "They nearly all agreed"      the estimate is reasonably firm
-    "They mostly agreed"          a few leaned differently, no real split
-    "They partly disagreed"       treat it as a rough guide
-    "They disagreed a lot"        there is no reliable answer here
+  Below it, four numbered sections hold the detail:
+
+    01  The advisors     every estimate and the reasoning behind it
+    02  The case against the strongest argument the other way
+    03  The evidence     every figure they were given
+    04  Method           the technical numbers
+
+  The paragraph also tells you whether the advisors agreed:
+
+    "agreed almost entirely"    the estimate is reasonably firm
+    "mostly agreed"             a few leaned differently, no real split
+    "disagreed noticeably"      treat it as a rough guide
+    "disagreed sharply"         there is no reliable answer here
 
   That last one is not a failure. If ten advisors looking at the same data
   reach opposite conclusions, the honest output is "nobody knows", and the
   page says so rather than inventing false confidence.
-
-  Three expandable sections hold the detail:
-
-    See what each advisor said     every individual estimate and its reasoning
-    Strongest argument against     the best case for the opposite conclusion
-    See the facts they used        every figure they were given
 
   Advisors may ONLY use the figures they are shown. They are not allowed to
   invent numbers, and if one cites a figure it was never given, the system

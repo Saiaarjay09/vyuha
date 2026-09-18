@@ -100,6 +100,9 @@ class OllamaProvider(Provider):
             "prompt": user,
             "stream": False,
             "options": {"temperature": temperature, "num_predict": max_tokens},
+            # Keep the model resident. Without this Ollama can unload between
+            # members and pay the load cost again on the next one.
+            "keep_alive": "15m",
         }
         if json_mode:
             payload["format"] = "json"
