@@ -40,6 +40,21 @@ class Status(str, Enum):
     FRAGILE = "fragile"
 
 
+class AssetClass(str, Enum):
+    """What an investor would actually ask about, as opposed to what a data
+    engineer would call the feed. The catalogue is indexed on both."""
+
+    EQUITY = "equity"            # shares, indices
+    ETF = "etf"                  # exchange-traded funds, index funds
+    MUTUAL_FUND = "mutual_fund"
+    BOND = "bond"                # G-secs, corporate debt
+    REAL_ESTATE = "real_estate"  # housing
+    CURRENCY = "currency"
+    COMMODITY = "commodity"
+    DERIVATIVE = "derivative"
+    MACRO = "macro"              # not investable; context
+
+
 class Domain(str, Enum):
     EQUITY = "equity"
     DERIVATIVES = "derivatives"
@@ -72,6 +87,7 @@ class SourceSpec:
     series: tuple[str, ...] = field(default_factory=tuple)
     notes: str = ""
     last_verified: str = ""   # ISO date this fetcher was last run against the live source
+    asset_classes: tuple[AssetClass, ...] = field(default_factory=tuple)
 
 
 CATALOGUE: tuple[SourceSpec, ...] = (
@@ -84,6 +100,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("EQ_OPEN", "EQ_HIGH", "EQ_LOW", "EQ_CLOSE", "EQ_VOLUME", "EQ_DELIV_PCT"),
         notes="Prices are NOT adjusted for corporate actions. Join to the corporate "
               "actions feed before computing returns or every split becomes a -50% day.",
+        asset_classes=(AssetClass.EQUITY, AssetClass.ETF,)
     ),
     SourceSpec(
         "nse_indices", "NSE Index Levels", Domain.EQUITY,
@@ -92,6 +109,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         Status.FRAGILE, "realtime", "seconds", "NSE terms of use",
         series=("NIFTY50_CLOSE", "BANKNIFTY_CLOSE", "NIFTY_MIDCAP_CLOSE"),
         last_verified="2026-09-18",
+        asset_classes=(AssetClass.EQUITY,)
     ),
     SourceSpec(
         "niftyindices_hist", "NIFTY Indices Historical", Domain.EQUITY,
@@ -101,12 +119,14 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("NIFTY_PE", "NIFTY_PB", "NIFTY_DIV_YIELD"),
         notes="The valuation series here are the cleanest free source of index P/E "
               "for India and are what the valuation persona reasons from.",
+        asset_classes=(AssetClass.EQUITY,)
     ),
     SourceSpec(
         "bse_bhavcopy", "BSE Daily Bhavcopy", Domain.EQUITY,
         "https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx",
         "End-of-day OHLCV for BSE-listed securities; wider small-cap coverage than NSE.",
         Status.PLANNED, "daily", "same day", "BSE terms of use",
+        asset_classes=(AssetClass.EQUITY,)
     ),
     SourceSpec(
         "stooq_index", "Stooq Index History", Domain.EQUITY,
@@ -116,6 +136,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("NIFTY50_CLOSE", "SENSEX_CLOSE"),
         notes="BLOCKED as of 2026-09: Stooq now serves a JavaScript proof-of-work "
               "challenge instead of CSV to non-browser clients. Use Yahoo instead.",
+        asset_classes=(AssetClass.EQUITY,)
     ),
     SourceSpec(
         "yahoo_chart", "Yahoo Finance Chart API", Domain.EQUITY,
@@ -125,6 +146,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("PX_CLOSE", "PX_VOLUME"),
         notes="Split/dividend adjusted series available, which makes it a useful "
               "cross-check against unadjusted bhavcopy prices.",
+        asset_classes=(AssetClass.EQUITY, AssetClass.ETF,)
     ),
 
     # ------------------------------------------------------- DERIVATIVES ----
@@ -138,6 +160,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
               "distribution from the chain is a market-priced view to compare the "
               "council's forecast against -- the single best calibration check available.",
         last_verified="2026-09-18",
+        asset_classes=(AssetClass.DERIVATIVE, AssetClass.EQUITY,)
     ),
     SourceSpec(
         "nse_vix", "India VIX", Domain.DERIVATIVES,
@@ -146,12 +169,14 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         Status.FRAGILE, "realtime", "seconds", "NSE terms of use",
         series=("INDIA_VIX",),
         last_verified="2026-09-18",
+        asset_classes=(AssetClass.DERIVATIVE, AssetClass.EQUITY,)
     ),
     SourceSpec(
         "nse_fo_bhavcopy", "NSE F&O Bhavcopy", Domain.DERIVATIVES,
         "https://nsearchives.nseindia.com/content/fo/",
         "EOD futures and options: settlement price, OI, contracts traded.",
         Status.PLANNED, "daily", "same day", "NSE terms of use",
+        asset_classes=(AssetClass.DERIVATIVE,)
     ),
     SourceSpec(
         "nse_participant_oi", "Participant-wise Open Interest", Domain.FLOWS,
@@ -161,6 +186,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("FII_INDEX_FUT_LS", "FII_INDEX_OPT_LS", "CLIENT_LS"),
         notes="Directly feeds the positioning persona. Extremes here have historically "
               "preceded reversals better than any valuation measure.",
+        asset_classes=(AssetClass.DERIVATIVE,)
     ),
 
     # ------------------------------------------------------------- FLOWS ----
@@ -171,6 +197,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         Status.FRAGILE, "daily", "1 day", "NSE terms of use",
         series=("FII_NET_CASH", "DII_NET_CASH"),
         last_verified="2026-09-18",
+        asset_classes=(AssetClass.EQUITY,)
     ),
     SourceSpec(
         "sebi_fpi", "SEBI FPI Investment Data", Domain.FLOWS,
@@ -178,6 +205,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         "Foreign portfolio investor flows by asset class and month.",
         Status.PLANNED, "monthly", "5 days", "SEBI - public",
         series=("FPI_NET_EQUITY", "FPI_NET_DEBT"),
+        asset_classes=(AssetClass.EQUITY, AssetClass.BOND,)
     ),
     SourceSpec(
         "amfi_sip", "AMFI SIP & Industry Flows", Domain.FUNDS,
@@ -187,6 +215,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("SIP_INFLOW", "EQUITY_FUND_NET_FLOW", "INDUSTRY_AUM"),
         notes="The structural domestic bid. Monthly SIP flow is arguably the most "
               "important single number for Indian equities over a 1-3 year horizon.",
+        asset_classes=(AssetClass.MUTUAL_FUND,)
     ),
     SourceSpec(
         "amfi_nav", "AMFI Daily NAV (all schemes)", Domain.FUNDS,
@@ -196,6 +225,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("MF_NAV",),
         notes="No key, no rate limit, genuinely open. ~10k schemes per file.",
         last_verified="2026-09-18",
+        asset_classes=(AssetClass.MUTUAL_FUND, AssetClass.ETF,)
     ),
 
     # -------------------------------------------------------- MACRO / RBI ----
@@ -212,6 +242,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         notes="Highest value per unit of parsing effort of anything RBI publishes. "
               "Current levels only, not a history -- for the path of policy you need "
               "the MPC statement archive. Requires a browser User-Agent.",
+        asset_classes=(AssetClass.MACRO, AssetClass.CURRENCY, AssetClass.BOND,)
     ),
     SourceSpec(
         "rbi_dbie", "RBI Database on Indian Economy", Domain.MACRO,
@@ -224,6 +255,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
               "Angular single-page app with no documented data API (confirmed "
               "2026-09-18) -- the bundle would have to be reverse-engineered. "
               "Use rbi_current_rates for policy rates today.",
+        asset_classes=(AssetClass.MACRO, AssetClass.BOND,)
     ),
     SourceSpec(
         "rbi_policy", "RBI Policy Statements & MPC Minutes", Domain.POLICY,
@@ -232,6 +264,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         Status.PLANNED, "bi-monthly", "same day", "RBI - public",
         notes="Text, not numbers. Feeds the policy persona directly; MPC vote splits "
               "are a genuinely predictive and under-used signal.",
+        asset_classes=(AssetClass.MACRO, AssetClass.BOND,)
     ),
     SourceSpec(
         "mospi_cpi", "MOSPI Consumer Price Index", Domain.MACRO,
@@ -244,6 +277,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
               "serves an UNCONFIGURED stock Swagger UI still pointing at "
               "petstore.swagger.io (checked 2026-09-18), so there is no MOSPI API. "
               "Route via data.gov.in, or parse the monthly press-release PDFs.",
+        asset_classes=(AssetClass.MACRO,)
     ),
     SourceSpec(
         "mospi_iip", "MOSPI Index of Industrial Production", Domain.MACRO,
@@ -252,6 +286,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("IIP_YOY", "IIP_MANUFACTURING", "IIP_CAPITAL_GOODS"),
         notes="Six-week lag and heavily revised. Nowcast it from power demand and "
               "e-way bills rather than waiting for the print.",
+        asset_classes=(AssetClass.MACRO,)
     ),
     SourceSpec(
         "mospi_gdp", "MOSPI National Accounts (GDP)", Domain.MACRO,
@@ -260,6 +295,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         Status.PLANNED, "quarterly", "~60 days", "MOSPI - public / open",
         series=("GDP_YOY", "GVA_YOY"),
         notes="Revised for years afterwards. Backtests MUST use the first print.",
+        asset_classes=(AssetClass.MACRO,)
     ),
     SourceSpec(
         "data_gov_in", "data.gov.in Open Government Data", Domain.MACRO,
@@ -268,6 +304,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         Status.WORKING, "varies", "varies", "Government Open Data Licence - India",
         needs_key=True, last_verified="2026-09-18",
         series=("CPI_ARCHIVE", "IIP_ARCHIVE", "POWER_SUPPLY_POSITION"),
+        asset_classes=(AssetClass.MACRO,),
         notes="Genuinely open licence -- the cleanest redistribution rights of anything "
               "here, and ~288,000 resources. Two caveats: the API's own `q` search "
               "parameter is silently ignored, so search_catalogue() pages and indexes "
@@ -282,6 +319,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         "Government bond trading, yields, the NDS-OM curve, CBLO/TREPS rates.",
         Status.PLANNED, "daily", "same day", "CCIL terms",
         series=("GSEC_10Y", "GSEC_CURVE", "TREPS_RATE"),
+        asset_classes=(AssetClass.BOND,)
     ),
     SourceSpec(
         "fbil_rates", "FBIL Benchmark Rates", Domain.FX,
@@ -291,6 +329,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("USDINR_REF", "MIBOR_ON", "TBILL_91D"),
         notes="The authoritative INR fixing -- use this rather than a broker quote "
               "for anything that needs to be defensible.",
+        asset_classes=(AssetClass.CURRENCY, AssetClass.BOND,)
     ),
     SourceSpec(
         "rbi_fx_reference", "RBI Reference Rate", Domain.FX,
@@ -298,6 +337,42 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         "Daily RBI reference rates for USD, EUR, GBP and JPY against INR.",
         Status.PLANNED, "daily", "same day", "RBI - public",
         series=("USDINR", "EURINR", "GBPINR", "JPYINR"),
+        asset_classes=(AssetClass.CURRENCY,)
+    ),
+
+    # ------------------------------------------------------- REAL ESTATE ----
+    SourceSpec(
+        "dgi_housing_price_index", "Housing Price Index (via data.gov.in)", Domain.MACRO,
+        "https://api.data.gov.in/resource/9bgkxg970ok4lae265ua0d8b16khrg89",
+        "Housing Price Index for India and major cities.",
+        Status.PLANNED, "quarterly", "~90 days",
+        "Government Open Data Licence - India", needs_key=True,
+        series=("HOUSING_PRICE_INDEX",),
+        asset_classes=(AssetClass.REAL_ESTATE,),
+        notes="Resource id located in the catalogue index, but NOT yet verified: the "
+              "shared demo API key hits its quota. Get a free key at "
+              "data.gov.in/help and set VYUHA_DATA_GOV_IN_KEY, then this should work.",
+    ),
+    SourceSpec(
+        "nhb_residex", "NHB RESIDEX", Domain.MACRO,
+        "https://residex.nhbonline.org.in/",
+        "India's official house price index, by city, from the National Housing Bank.",
+        Status.PLANNED, "quarterly", "~90 days", "NHB - public",
+        series=("RESIDEX_CITY", "RESIDEX_COMPOSITE"),
+        asset_classes=(AssetClass.REAL_ESTATE,),
+        notes="Site is reachable but serves a JavaScript application; the data sits "
+              "behind downloadable spreadsheets that need parsing. The canonical "
+              "Indian house-price source and the right long-term home for housing.",
+    ),
+    SourceSpec(
+        "rbi_hpi", "RBI House Price Index", Domain.MACRO,
+        "https://data.rbi.org.in/",
+        "RBI's quarterly all-India and city-level house price index.",
+        Status.PLANNED, "quarterly", "~90 days", "RBI - public",
+        series=("RBI_HPI",), asset_classes=(AssetClass.REAL_ESTATE,),
+        notes="Inside DBIE, which has no documented data API. Housing is the weakest "
+              "asset class in this catalogue -- treat any housing question as "
+              "unanswerable until one of these three is wired.",
     ),
 
     # -------------------------------------------------- ALTERNATIVE DATA ----
@@ -313,6 +388,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
               "ahead of the IIP print it anticipates -- so power.grid_india_available() "
               "probes live and the module starts working again if the host returns. "
               "npp.gov.in is reachable as an alternative route.",
+        asset_classes=(AssetClass.MACRO,)
     ),
     SourceSpec(
         "npci_upi", "NPCI UPI Statistics", Domain.ALT,
@@ -322,6 +398,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("UPI_VOLUME", "UPI_VALUE"),
         notes="Proxy for consumption and formalisation. Structurally trending, so "
               "use the deviation from trend, never the level.",
+        asset_classes=(AssetClass.MACRO,)
     ),
     SourceSpec(
         "gst_eway", "GST Collections & E-Way Bills", Domain.ALT,
@@ -331,6 +408,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("GST_COLLECTIONS", "EWAY_BILLS"),
         notes="GST collections print on the 1st for the prior month -- among the "
               "fastest real-activity reads available anywhere in India.",
+        asset_classes=(AssetClass.MACRO,)
     ),
     SourceSpec(
         "vahan_registrations", "VAHAN Vehicle Registrations", Domain.ALT,
@@ -340,6 +418,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("AUTO_REGISTRATIONS", "TWO_WHEELER_REG", "TRACTOR_REG"),
         notes="Two-wheeler and tractor registrations are the standard rural demand "
               "proxy and lead reported auto-sector earnings.",
+        asset_classes=(AssetClass.MACRO,)
     ),
     SourceSpec(
         "imd_rainfall", "IMD Rainfall & Monsoon", Domain.ALT,
@@ -350,6 +429,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         notes="Monsoon -> kharif output -> food inflation -> RBI policy -> rates -> "
               "equity multiples. One of the longest genuinely causal chains in this "
               "market, and it starts with weather.",
+        asset_classes=(AssetClass.MACRO, AssetClass.COMMODITY,)
     ),
 
     # ------------------------------------------------------------ GLOBAL ----
@@ -360,6 +440,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         Status.WORKING, "daily", "1 day", "free; see FRED terms",
         series=("US10Y", "DXY", "FED_FUNDS", "US_CPI"),
         last_verified="2026-09-18",
+        asset_classes=(AssetClass.MACRO, AssetClass.BOND,)
     ),
     SourceSpec(
         "world_bank", "World Bank Open Data API", Domain.GLOBAL,
@@ -369,6 +450,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("GDP_PC", "INFLATION_ANNUAL", "TRADE_PCT_GDP"),
         notes="Genuinely open licence. Annual only -- context, not signal.",
         last_verified="2026-09-18",
+        asset_classes=(AssetClass.MACRO,)
     ),
     SourceSpec(
         "eia_oil", "US EIA Petroleum Prices", Domain.COMMODITY,
@@ -378,6 +460,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("BRENT", "WTI"),
         notes="India imports over 85% of its crude. Brent in INR is the single "
               "highest-leverage external variable for this economy.",
+        asset_classes=(AssetClass.COMMODITY,)
     ),
 
     # --------------------------------------------------------- SENTIMENT ----
@@ -389,6 +472,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("NEWS_TONE_INDIA", "NEWS_VOLUME_INDIA"),
         notes="Tone is noisy and its baseline drifts. Use the z-score against a "
               "trailing window, never the raw level.",
+        asset_classes=(AssetClass.MACRO,)
     ),
     SourceSpec(
         "rbi_sebi_circulars", "SEBI & RBI Circulars", Domain.POLICY,
@@ -398,6 +482,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         notes="Unstructured text, high impact. A margin or position-limit change can "
               "reprice an entire market segment overnight -- this is exactly the kind "
               "of discrete regime shift a purely statistical model cannot anticipate.",
+        asset_classes=(AssetClass.MACRO,)
     ),
 
     # --------------------------------------------------------- CORPORATE ----
@@ -407,12 +492,14 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         "Splits, bonuses, dividends, rights, mergers with ex-dates.",
         Status.PLANNED, "daily", "1 day", "NSE terms of use",
         notes="Mandatory for correct returns. Without it every split is a fake crash.",
+        asset_classes=(AssetClass.EQUITY,)
     ),
     SourceSpec(
         "nse_announcements", "NSE Corporate Announcements", Domain.CORPORATE,
         "https://www.nseindia.com/api/corporate-announcements",
         "Company filings, results, board meetings, insider trades.",
         Status.PLANNED, "realtime", "minutes", "NSE terms of use",
+        asset_classes=(AssetClass.EQUITY,)
     ),
     SourceSpec(
         "nse_shareholding", "Shareholding Patterns", Domain.CORPORATE,
@@ -422,6 +509,7 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         series=("PROMOTER_HOLDING", "PROMOTER_PLEDGE_PCT"),
         notes="Rising promoter pledging has preceded a large share of Indian mid-cap "
               "blowups. A high-value, under-watched risk signal.",
+        asset_classes=(AssetClass.EQUITY,)
     ),
 )
 
@@ -444,6 +532,32 @@ def all_series() -> dict[str, str]:
     for s in CATALOGUE:
         for ser in s.series:
             out.setdefault(ser, s.key)
+    return out
+
+
+def by_asset_class(ac: "AssetClass | str") -> list[SourceSpec]:
+    a = AssetClass(ac) if isinstance(ac, str) else ac
+    return [s for s in CATALOGUE if a in s.asset_classes]
+
+
+def asset_class_coverage() -> dict[str, dict]:
+    """Can Vyuha actually answer questions about each asset class?
+
+    ``usable`` counts sources with a working or merely fragile fetcher --
+    i.e. things that returned real data when last run. A class with zero
+    usable sources cannot be answered honestly, and the system should say so
+    rather than let a language model improvise.
+    """
+    out: dict[str, dict] = {}
+    for a in AssetClass:
+        srcs = by_asset_class(a)
+        usable = [s for s in srcs if s.status in (Status.WORKING, Status.FRAGILE)]
+        out[a.value] = {
+            "sources": len(srcs),
+            "usable": len(usable),
+            "usable_keys": [s.key for s in usable],
+            "can_answer": len(usable) > 0,
+        }
     return out
 
 

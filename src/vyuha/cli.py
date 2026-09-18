@@ -309,6 +309,76 @@ def council_record(half_life: float = typer.Option(40.0, help="Decay, in questio
 # ---------------------------------------------------------------------- risk
 
 
+@app.command()
+def coverage() -> None:
+    """Which asset classes Vyuha can actually answer questions about."""
+    from vyuha.ingest.catalogue import asset_class_coverage
+
+    t = Table(show_header=True, header_style="bold", title="Asset class coverage")
+    for c in ("asset class", "sources", "usable", "can answer?", "working sources"):
+        t.add_column(c, overflow="fold")
+    for k, v in asset_class_coverage().items():
+        ok = v["can_answer"]
+        t.add_row(k.replace("_", " "), str(v["sources"]), str(v["usable"]),
+                  "[green]yes[/]" if ok else "[red]NO[/]",
+                  ", ".join(v["usable_keys"][:4]) or "[dim]none[/]")
+    console.print(t)
+    console.print("[dim]'Usable' = a fetcher that returned real data when last run. "
+                  "Questions about unanswerable classes are refused, not guessed.[/]")
+
+
+@app.command()
+def benchmark(
+    symbol: str = typer.Option("NIFTY", help="Index to read the option chain for."),
+    level: float = typer.Option(None, help="Strike level for the probability question."),
+    expiry: str = typer.Option(None, help="Expiry, e.g. 19-Oct-2026. Default: ~30 days out."),
+) -> None:
+    """Extract the market's own forecast from the option chain.
+
+    This is the benchmark to beat. Aladdin cannot be benchmarked -- it is
+    proprietary with no public accuracy figures -- but the option-implied
+    probability is public, falsifiable and produced by people with money at risk.
+    """
+    from vyuha.benchmark.implied import implied_from_chain, real_world_adjust
+    from vyuha.ingest.base import NSESession
+    from vyuha.ingest.sources import nse_option_chain
+
+    with console.status("fetching option chain..."), NSESession() as s:
+        chain = nse_option_chain(symbol, s, all_expiries=True)
+
+    spot = float(chain.attrs["underlying"])
+    expiries = chain.attrs["expiries"]
+    target = expiry or (expiries[4] if len(expiries) > 4 else expiries[-1])
+    level = level or round(spot * 0.98 / 100) * 100
+
+    try:
+        dist = implied_from_chain(chain, expiry=target)
+    except ValueError as exc:
+        console.print(f"[red]could not recover a distribution:[/] {exc}")
+        raise typer.Exit(1) from exc
+
+    d = dist.diagnostics
+    if not d["reliable"]:
+        console.print(f"[yellow]warning:[/] unreliable recovery - {d['unreliable_reason']}")
+
+    t = Table(show_header=True, header_style="bold",
+              title=f"{symbol} @ {spot:,.1f} - market-implied, expiry {target}")
+    t.add_column("measure"); t.add_column("value", justify="right")
+    t.add_row("median", f"{dist.median():,.0f}")
+    t.add_row("90% range", f"{dist.quantile(0.05):,.0f} - {dist.quantile(0.95):,.0f}")
+    t.add_row("strikes used", str(dist.n_strikes_used))
+    t.add_row("", "")
+    t.add_row(f"P(finish <= {level:,.0f})", f"{dist.prob_below(level):.2%}")
+    t.add_row(f"P(ever touch {level:,.0f})", f"{dist.prob_touch_below(level):.2%}")
+    t.add_row("  de-biased for risk premium",
+              f"{real_world_adjust(dist.prob_touch_below(level)):.2%}")
+    console.print(t)
+    console.print("[dim]'Ever touch' is the barrier probability and is the one "
+                  "comparable to a 'on any session' council question. Risk-neutral "
+                  "probabilities overstate downside; the de-biased row corrects "
+                  "crudely for that.[/]")
+
+
 @risk_app.command("scenarios")
 def risk_scenarios() -> None:
     """List the stress scenarios and the lesson each one encodes."""

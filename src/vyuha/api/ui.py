@@ -292,6 +292,21 @@ function renderData(d){
   return h+`<p class="foot">Source: RBI and NSE, fetched just now.</p></div>`;
 }
 
+function renderNoData(d){
+  let h=`<div class="card"><p class="headline">I don't have data for that yet</p>
+    <p class="sub">${esc(d.message)}</p>`;
+  if(d.catalogued?.length){
+    h+=`<details><summary>What would be needed to answer it</summary><div class="body">`;
+    for(const c of d.catalogued)
+      h+=`<div class="person"><span class="who"><span class="nm">${esc(c.name)}</span>
+          <div class="rl">${esc(c.status)}</div>
+          <div class="sy">${esc(c.note||'')}</div></span></div>`;
+    h+=`</div></details>`;
+  }
+  return h+`<p class="foot">Guessing would be easy and wrong. The system is built
+    to say when it doesn't know.</p></div>`;
+}
+
 function renderRisk(d){
   let h=`<div class="card"><p class="headline">If history repeated</p>
     <p class="sub">What an example portfolio would lose in each of these real past
@@ -360,7 +375,9 @@ async function submit(text){
           pending.className='err'; pending.textContent='Something went wrong: '+d.error;
         }else if(ev==='done'){
           pending.remove();
-          add(d.route==='council'?renderCouncil(d):d.route==='data'?renderData(d):renderRisk(d));
+          add(d.route==='council'?renderCouncil(d)
+             :d.route==='data'?renderData(d)
+             :d.route==='no_data'?renderNoData(d):renderRisk(d));
         }
       }
     }

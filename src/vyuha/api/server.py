@@ -67,6 +67,58 @@ _DATA_PAT = re.compile(
 )
 _RISK_PAT = re.compile(r"\b(var\b|value at risk|stress|scenario|drawdown|volatility|"
                        r"tail risk|expected shortfall)\b", re.I)
+# Asking about something we hold no data on must produce an admission, not an
+# improvisation. A language model will happily answer a housing question from
+# training-data memory; that is exactly the failure this system exists to avoid.
+_ASSET_HINTS: dict[str, tuple[str, ...]] = {
+    "real_estate": ("hous", "property", "real estate", "realty", "flat", "apartment",
+                    "rent", "mortgage", "home loan", "residex", "land price"),
+    "commodity": ("gold", "silver", "crude", "oil price", "commodity", "commodities",
+                  "copper", "steel", "wheat", "sugar"),
+    "bond": ("bond", "g-sec", "gsec", "gilt", "debenture", "yield curve",
+             "fixed income", "debt fund"),
+    "etf": ("etf", "exchange traded", "index fund", "niftybees", "goldbees"),
+    "mutual_fund": ("mutual fund", "sip", "nav", "amc "),
+    "equity": ("share", "stock", "nifty", "sensex", "equity", "midcap", "smallcap"),
+}
+
+
+def detect_asset_class(text: str) -> str | None:
+    low = text.lower()
+    best: tuple[int, str] | None = None
+    for ac, hints in _ASSET_HINTS.items():
+        score = sum(1 for h in hints if h in low)
+        if score and (best is None or score > best[0]):
+            best = (score, ac)
+    return best[1] if best else None
+
+
+def coverage_gap(text: str) -> dict | None:
+    """Return a refusal payload if the question is about an asset class we
+    have no working data source for."""
+    from vyuha.ingest.catalogue import asset_class_coverage
+
+    ac = detect_asset_class(text)
+    if ac is None:
+        return None
+    cov = asset_class_coverage().get(ac)
+    if cov and cov["can_answer"]:
+        return None
+    from vyuha.ingest.catalogue import by_asset_class
+
+    planned = [s for s in by_asset_class(ac)]
+    return {
+        "route": "no_data",
+        "asset_class": ac,
+        "message": (
+            f"I don't have a working data source for {ac.replace('_', ' ')} yet, "
+            f"so I can't answer this honestly. I'd rather say that than guess."
+        ),
+        "catalogued": [{"name": s.name, "url": s.url, "status": s.status.value,
+                        "note": s.notes} for s in planned],
+    }
+
+
 _FORECAST_PAT = re.compile(r"\b(will|would|probability|odds|chance|likely|forecast|"
                            r"expect|predict|by (?:next|the end)|before)\b", re.I)
 
@@ -190,6 +242,14 @@ def personas() -> list[dict]:
     ]
 
 
+@app.get("/api/coverage")
+def coverage() -> dict:
+    """Which asset classes can actually be answered, and which cannot."""
+    from vyuha.ingest.catalogue import asset_class_coverage
+
+    return asset_class_coverage()
+
+
 @app.get("/api/sources")
 def sources() -> dict:
     from vyuha.ingest.catalogue import CATALOGUE, coverage_summary
@@ -245,6 +305,12 @@ async def ask_stream(req: AskRequest) -> StreamingResponse:
 
 
 def _run_ask(req: AskRequest, emit=None) -> dict:
+    gap = coverage_gap(req.question)
+    if gap is not None:
+        if emit:
+            emit("status", {"stage": "checking data coverage"})
+        return gap
+
     kind = classify(req.question)
     if emit:
         emit("status", {"stage": "classified", "route": kind})

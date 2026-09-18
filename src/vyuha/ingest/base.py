@@ -47,6 +47,7 @@ HOST_RATE_LIMITS: dict[str, float] = {
     "api.worldbank.org": 1.0,
     "fred.stlouisfed.org": 1.0,
     "portal.amfiindia.com": 2.0,
+    "api.data.gov.in": 3.0,   # the shared demo key is aggressively throttled
 }
 
 

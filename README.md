@@ -276,6 +276,65 @@ every other site on that port.
 
 ---
 
+## Can it beat Aladdin?
+
+Not at what Aladdin is for, and it should not try. Aladdin is portfolio
+infrastructure — order management, compliance, settlement, global multi-asset
+coverage, licensed feeds, thirty years of crisis-tested history. That needs a
+company, not a repository.
+
+It also **cannot be benchmarked against**: proprietary, no public API, no
+published accuracy figures. Anyone showing you a head-to-head has invented it.
+
+So Vyuha benchmarks against something public and falsifiable instead — **the NSE
+option chain's implied probability**, real money's own forecast, free and
+updating every few seconds:
+
+```bash
+vyuha benchmark
+```
+
+A live reading with the Nifty at 23,346, on "close below 22,900 on any session
+in ~30 days":
+
+| | |
+|---|---|
+| Market, terminal `P(S_T ≤ K)` | 23.2% |
+| Market, barrier-adjusted | 46.3% |
+| Market, de-biased for risk premium | 40.2% |
+| **Vyuha council** | **12.3%** |
+
+The council sits 27.9pp below the market — most likely because a 3B model does
+not grasp that "any session" is a *barrier* question, not a terminal one. That
+is now a measurable defect rather than an unexamined one.
+
+Where a small Indian system genuinely wins: alternative data global vendors
+won't wire up (power demand, e-way bills, monsoon), market structure their
+models ignore (circuit limits, promoter pledging), policy shocks statistics
+cannot see, and reasoning you can actually audit.
+
+Full analysis: **[docs/VS_ALADDIN.md](docs/VS_ALADDIN.md)**.
+
+## What it can answer
+
+```bash
+vyuha coverage
+```
+
+| Asset class | Can answer? |
+|---|---|
+| Equity / shares, derivatives | **Yes** — indices, VIX, option chain, flows, factors, stress |
+| ETFs, mutual funds | **Yes, shallow** — prices and ~14,400 NAVs, no tracking-error analytics |
+| Currency | **Yes, basic** — RBI reference rates |
+| Bonds | **Weak** — policy corridor only; **no Indian G-sec curve** |
+| Real estate / housing | **No** — nothing wired |
+| Commodities | **No** — nothing wired |
+
+Ask about housing and the system **refuses rather than guesses** — a language
+model would happily answer from memory with confident, sourceless numbers, which
+is the exact failure this project exists to prevent. Details and the gap list:
+**[docs/COVERAGE.md](docs/COVERAGE.md)**.
+
 ## On the precision target
 
 This project was specified to detect effects moving the market by **0.00001%**.
