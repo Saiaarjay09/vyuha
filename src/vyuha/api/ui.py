@@ -1,8 +1,13 @@
-"""The web console, as a single self-contained page.
+"""The web console.
 
-No build step, no framework, no CDN. One file that a browser can render and a
-human can read -- which matters for a risk tool, because you should be able to
-audit the thing that is showing you numbers.
+Written for someone who has never used a risk system. The hard numbers are all
+still here, but the front of the page is plain English and everything
+technical is one click away rather than in your face.
+
+Three rules the design follows:
+  - Say the answer in words before saying it as a number.
+  - Never show a term without explaining it in the same breath.
+  - Never hide the uncertainty to look more confident.
 """
 
 PAGE = r"""<!DOCTYPE html>
@@ -13,289 +18,368 @@ PAGE = r"""<!DOCTYPE html>
 <title>Vyuha</title>
 <style>
 :root{
-  --bg:#0b0e14; --panel:#11151f; --panel2:#161b28; --line:#232a3a;
-  --fg:#d7dce8; --dim:#7c8699; --dimmer:#4f5870;
-  --accent:#6ea8fe; --good:#5ad19a; --warn:#e8b84b; --bad:#f26b6b;
-  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --bg:#fbfbfa; --card:#fff; --line:#e6e4e0; --line2:#f0eeeb;
+  --fg:#1c1b19; --dim:#6b6862; --dimmer:#9a968e;
+  --accent:#2d6cdf; --accent-soft:#eef3fd;
+  --no:#2e9e6b; --mid:#c9891f; --yes:#d4553d;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --num:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
+@media (prefers-color-scheme:dark){:root{
+  --bg:#16161a; --card:#1d1d22; --line:#2c2c33; --line2:#26262c;
+  --fg:#eceaea; --dim:#a3a09b; --dimmer:#6e6b66;
+  --accent:#6fa0f5; --accent-soft:#1e2739;
+  --no:#54c08c; --mid:#e0a63f; --yes:#ef7a60;
+}}
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
-  font-size:14px;line-height:1.55;display:flex;flex-direction:column}
-a{color:var(--accent)}
-header{border-bottom:1px solid var(--line);padding:10px 16px;display:flex;
-  align-items:baseline;gap:12px;flex-wrap:wrap;background:var(--panel)}
-header h1{margin:0;font-size:15px;letter-spacing:.14em;font-weight:600}
-header .sub{color:var(--dim);font-size:12px}
-header .status{margin-left:auto;font-size:12px;color:var(--dim)}
-.dot{display:inline-block;width:7px;height:7px;border-radius:50%;
-  background:var(--dimmer);margin-right:6px;vertical-align:middle}
-.dot.on{background:var(--good)} .dot.off{background:var(--bad)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:16px;line-height:1.6;display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased}
 
-main{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
-.wrap{width:100%;max-width:880px;margin:0 auto}
+header{padding:18px 20px 14px;border-bottom:1px solid var(--line);background:var(--card)}
+.hdr{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.hdr h1{margin:0;font-size:17px;font-weight:650;letter-spacing:-.01em}
+.hdr .tag{color:var(--dim);font-size:14px}
+.hdr .st{margin-left:auto;font-size:12.5px;color:var(--dimmer)}
 
-.msg{white-space:pre-wrap;word-break:break-word}
-.msg.user{color:var(--fg)}
-.msg.user .p{color:var(--accent)}
-.msg.sys{color:var(--dim);font-size:13px}
-.msg.err{color:var(--bad)}
+main{flex:1;overflow-y:auto;padding:22px 20px 8px}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 
-.card{border:1px solid var(--line);border-radius:6px;background:var(--panel);
-  padding:14px;margin-top:6px}
-.card h3{margin:0 0 10px;font-size:12px;letter-spacing:.1em;color:var(--dim);
-  text-transform:uppercase;font-weight:600}
+.intro h2{margin:0 0 8px;font-size:21px;font-weight:650;letter-spacing:-.01em}
+.intro p{margin:0 0 12px;color:var(--dim);font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;
+  padding:8px 14px;font-size:14px;cursor:pointer;color:var(--fg);
+  font-family:inherit;text-align:left;transition:border-color .12s,background .12s}
+.chip:hover{border-color:var(--accent);background:var(--accent-soft)}
 
-.verdict{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
-  padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:12px}
-.verdict .pct{font-size:34px;font-weight:600;letter-spacing:-.02em}
-.verdict .lbl{color:var(--dim);font-size:12px}
+.you{align-self:flex-end;background:var(--accent);color:#fff;padding:10px 15px;
+  border-radius:16px 16px 4px 16px;max-width:85%;font-size:15px}
 
-.bar{height:5px;background:var(--panel2);border-radius:3px;overflow:hidden;margin-top:3px}
-.bar i{display:block;height:100%;background:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:20px;overflow:hidden}
 
-.mem{display:grid;grid-template-columns:132px 54px 1fr;gap:10px;align-items:center;
-  padding:6px 0;border-bottom:1px solid #1a2030}
-.mem:last-child{border-bottom:none}
-.mem .n{color:var(--fg);font-size:13px;overflow:hidden;text-overflow:ellipsis}
-.mem .v{text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
-.mem .why{grid-column:1/-1;color:var(--dim);font-size:12px;margin:-2px 0 4px}
-.mem .cite{color:var(--dimmer);font-size:11px}
+.headline{font-size:24px;font-weight:650;letter-spacing:-.02em;margin:0 0 4px}
+.sub{color:var(--dim);font-size:14.5px;margin:0}
+.meter{height:8px;background:var(--line2);border-radius:99px;margin:16px 0 6px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+.scale{display:flex;justify-content:space-between;color:var(--dimmer);font-size:12px}
 
-.ev{display:grid;grid-template-columns:auto 1fr auto;gap:8px 12px;font-size:12.5px}
-.ev .id{color:var(--dimmer)}
-.ev .lb{color:var(--dim)}
-.ev .vl{text-align:right;font-variant-numeric:tabular-nums}
+.agree{margin-top:16px;padding:12px 14px;background:var(--bg);
+  border-radius:10px;font-size:14.5px;color:var(--fg)}
+.agree b{font-weight:600}
+.agree span{color:var(--dim)}
 
-.note{color:var(--dim);font-size:12px;margin-top:10px;padding-top:10px;
-  border-top:1px solid var(--line);white-space:pre-wrap}
-.warn{border-left:2px solid var(--warn);padding-left:10px;color:var(--warn);
-  font-size:12.5px;margin:10px 0}
-.dissent{border-left:2px solid var(--dim);padding-left:10px;margin:8px 0;
-  color:var(--fg);font-size:12.5px}
+.qa{margin-top:16px;padding-top:14px;border-top:1px solid var(--line2)}
+.qa h4{margin:0 0 4px;font-size:14px;font-weight:600}
+.qa p{margin:0 0 12px;color:var(--dim);font-size:14.5px}
 
-footer{border-top:1px solid var(--line);background:var(--panel);padding:10px 16px}
-form{display:flex;gap:10px;align-items:flex-start;max-width:880px;margin:0 auto;width:100%}
-.prompt{color:var(--accent);padding-top:7px}
-textarea{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--fg);
-  font-family:var(--mono);font-size:14px;padding:7px 10px;border-radius:5px;
-  resize:none;min-height:36px;max-height:160px;outline:none}
-textarea:focus{border-color:var(--accent)}
-button{background:var(--accent);color:#0b0e14;border:0;border-radius:5px;
-  padding:8px 16px;font-family:var(--mono);font-weight:600;cursor:pointer;font-size:13px}
-button:disabled{opacity:.45;cursor:not-allowed}
-.hint{max-width:880px;margin:8px auto 0;color:var(--dimmer);font-size:11.5px}
+details{margin-top:10px;border-top:1px solid var(--line2);padding-top:10px}
+details summary{cursor:pointer;font-size:14px;color:var(--accent);
+  list-style:none;user-select:none;padding:3px 0}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"› ";display:inline-block;transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details .body{padding:10px 0 4px}
 
-.spin::after{content:"";animation:d 1.2s steps(4,end) infinite}
+.person{display:flex;gap:12px;align-items:flex-start;padding:11px 0;
+  border-bottom:1px solid var(--line2)}
+.person:last-child{border-bottom:none}
+.person .pct{font-family:var(--num);font-size:14px;font-weight:600;min-width:44px;
+  text-align:right;padding-top:1px}
+.person .who{flex:1;min-width:0}
+.person .nm{font-size:14.5px;font-weight:600}
+.person .rl{font-size:13px;color:var(--dimmer);margin-bottom:3px}
+.person .sy{font-size:14px;color:var(--dim)}
+
+.rows{display:flex;flex-direction:column;gap:2px}
+.row{display:flex;gap:12px;align-items:baseline;padding:5px 0;
+  border-bottom:1px solid var(--line2);font-size:14.5px}
+.row:last-child{border-bottom:none}
+.row .k{color:var(--dim);flex:1}
+.row .v{white-space:nowrap}
+.row .v{font-family:var(--num);font-weight:600}
+
+.flag{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:14px;
+  background:#fdf6e8;color:#7a5a12;border:1px solid #f0e0bd}
+@media (prefers-color-scheme:dark){.flag{background:#2b2513;color:#e6c675;border-color:#463c1e}}
+
+.foot{color:var(--dimmer);font-size:13px;margin-top:16px;padding-top:12px;
+  border-top:1px solid var(--line2)}
+.sys{color:var(--dim);font-size:14.5px;white-space:pre-wrap}
+.err{color:var(--yes);font-size:14.5px}
+.load{color:var(--dim);font-size:14.5px}
+.load::after{content:"";animation:d 1.3s steps(4,end) infinite}
 @keyframes d{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
-@media(max-width:640px){
-  .mem{grid-template-columns:100px 48px 1fr}
-  .verdict .pct{font-size:28px}
-  header .status{width:100%;margin-left:0}
+
+footer{position:sticky;bottom:0;background:var(--card);border-top:1px solid var(--line);
+  padding:14px 20px 16px}
+form{display:flex;gap:10px;max-width:680px;margin:0 auto;align-items:flex-end}
+textarea{flex:1;font-family:inherit;font-size:16px;padding:12px 14px;
+  border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);
+  resize:none;min-height:46px;max-height:150px;outline:none;line-height:1.45}
+textarea:focus{border-color:var(--accent)}
+button.go{background:var(--accent);color:#fff;border:0;border-radius:12px;
+  padding:0 20px;height:46px;font-size:15px;font-weight:600;cursor:pointer;
+  font-family:inherit;flex-shrink:0}
+button.go:disabled{opacity:.4;cursor:not-allowed}
+.tip{max-width:680px;margin:9px auto 0;color:var(--dimmer);font-size:12.5px;text-align:center}
+
+@media(max-width:600px){
+  body{font-size:15px}
+  .headline{font-size:21px}
+  main{padding:18px 16px 8px}
+  header,footer{padding-left:16px;padding-right:16px}
 }
 </style>
 </head>
 <body>
-<header>
-  <h1>VYUHA</h1>
-  <span class="sub">Indian markets &middot; bias-diverse council</span>
-  <span class="status"><span class="dot" id="dot"></span><span id="st">connecting</span></span>
-</header>
 
-<main id="log"><div class="wrap" id="logw"></div></main>
+<header><div class="hdr">
+  <h1>Vyuha</h1><span class="tag">Indian markets, explained</span>
+  <span class="st" id="st">·</span>
+</div></header>
+
+<main><div class="wrap" id="log"></div></main>
 
 <footer>
   <form id="f">
-    <span class="prompt">&gt;</span>
-    <textarea id="q" rows="1" placeholder="Ask a question — e.g. Will the Nifty 50 close below 22,900 in the next 30 days?" autofocus></textarea>
-    <button id="go" type="submit">Ask</button>
+    <textarea id="q" rows="1" placeholder="Ask anything about Indian markets…"></textarea>
+    <button class="go" id="go" type="submit">Ask</button>
   </form>
-  <div class="hint">Enter to send &middot; Shift+Enter for newline &middot; /help /evidence /personas /sources</div>
+  <div class="tip">Free and open source · Not investment advice</div>
 </footer>
 
 <script>
-// Works whether the app is mounted at / or behind a reverse-proxy subpath
-// (Tailscale serve --set-path=/vyuha), so the same page serves both.
-const BASE=location.pathname.replace(/\/+$/,'');
-const api=p=>BASE+p;
-
-const logw=document.getElementById('logw'), form=document.getElementById('f'),
+const BASE=location.pathname.replace(/\/+$/,''), api=p=>BASE+p;
+const log=document.getElementById('log'), form=document.getElementById('f'),
       qEl=document.getElementById('q'), go=document.getElementById('go'),
-      dot=document.getElementById('dot'), st=document.getElementById('st');
+      stEl=document.getElementById('st');
 let busy=false;
 
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const pct=v=>v==null?'—':(v*100).toFixed(1)+'%';
-const num=v=>typeof v==='number'?v.toLocaleString('en-IN',{maximumFractionDigits:4}):esc(v);
+const fmt=v=>typeof v==='number'?v.toLocaleString('en-IN',{maximumFractionDigits:2}):esc(v);
 
-function add(html,cls){const d=document.createElement('div');d.className='msg '+(cls||'');
-  d.innerHTML=html;logw.appendChild(d);
-  document.getElementById('log').scrollTop=1e9;return d;}
-
-function colorFor(p){return p==null?'var(--dim)':p>=.66?'var(--bad)':p>=.33?'var(--warn)':'var(--good)';}
-
-async function health(){
-  try{
-    const r=await fetch(api('/api/health')),d=await r.json();
-    dot.className='dot on';
-    const fam=d.distinct_model_families||0;
-    st.textContent=`v${d.version} · ${d.models.length} model${d.models.length===1?'':'s'}`+
-      (fam<2?' · correlated':'');
-  }catch(e){dot.className='dot off';st.textContent='offline';}
+/* ---------- turning numbers into plain English ---------- */
+function verdict(p){
+  if(p<0.10) return['Very unlikely','var(--no)'];
+  if(p<0.30) return['Unlikely','var(--no)'];
+  if(p<0.45) return['Probably not','var(--mid)'];
+  if(p<0.55) return['Too close to call','var(--mid)'];
+  if(p<0.70) return['Fairly likely','var(--mid)'];
+  if(p<0.90) return['Likely','var(--yes)'];
+  return['Very likely','var(--yes)'];
 }
+function odds(p){
+  if(p<=0||p>=1) return '';
+  const n=Math.round(1/(p<0.5?p:1-p));
+  if(n<2||n>200) return '';
+  return p<0.5?`roughly a 1 in ${n} chance`:`roughly a ${n-1} in ${n} chance`;
+}
+function agreement(d,n){
+  if(n<2) return['',''];
+  if(d<0.05) return['They nearly all agreed.','That is a strong signal — but see the note below about why agreement can mislead.'];
+  if(d<0.12) return['They mostly agreed.','A few advisors leaned differently, but there was no real split.'];
+  if(d<0.22) return['They partly disagreed.','Treat this answer as a rough guide rather than a firm number.'];
+  return['They disagreed a lot.','There is no reliable answer here. The disagreement is the finding.'];
+}
+const LABELS={
+  REPO_RATE:'Repo rate (RBI policy rate)', SDF_RATE:'Standing deposit facility',
+  MSF_RATE:'Marginal standing facility', BANK_RATE:'Bank rate',
+  REVERSE_REPO_RATE:'Reverse repo rate', CRR:'Cash reserve ratio (CRR)',
+  SLR:'Statutory liquidity ratio (SLR)', USDINR:'Rupees per US dollar',
+  GBPINR:'Rupees per British pound', EURINR:'Rupees per euro',
+  JPYINR_100:'Rupees per 100 yen', NIFTY_50:'Nifty 50 index',
+  NIFTY_BANK:'Bank Nifty index', INDIA_VIX:'India VIX (fear gauge)',
+  NIFTY_MIDCAP_100:'Nifty Midcap 100 index',
+  DII_NET_CASH:'Indian institutions bought (net)',
+  FII_FPI_NET_CASH:'Foreign investors bought (net)',
+  NIFTY_PUT_CALL_RATIO:'Put-call ratio (bearish if high)',
+  NIFTY_ATM_IV:'Expected volatility from options',
+  US10Y:'US 10-year bond yield', BRENT:'Brent crude oil'
+};
+const nice=k=>LABELS[k]||k.replace(/_/g,' ').toLowerCase()
+  .replace(/^./,c=>c.toUpperCase());
 
+const ROLES={
+  hawk:'Worries about inflation', dove:'Worries about weak growth',
+  value_bear:'Thinks shares are overpriced', momentum_bull:'Follows the trend',
+  global_macro:'Watches the US, the dollar and oil', flows:'Watches who is buying and selling',
+  quant:'Only trusts the numbers', policy:'Watches the government and RBI',
+  behavioural:'Watches the mood of the crowd', red_team:'Argues against everyone else'
+};
+
+function add(html,cls){const d=document.createElement('div');
+  if(cls)d.className=cls; d.innerHTML=html; log.appendChild(d);
+  d.scrollIntoView({block:'nearest'}); return d;}
+
+/* ---------- renderers ---------- */
 function renderCouncil(d){
-  let h='<div class="card">';
-  h+=`<div class="verdict"><div><div class="pct" style="color:${colorFor(d.probability)}">${pct(d.probability)}</div>`;
-  h+=`<div class="lbl">probability · resolves ${esc(d.resolves)}</div></div>`;
-  h+=`<div><div class="lbl">dispersion</div><div>${d.dispersion?.toFixed(3)??'—'}</div></div>`;
-  h+=`<div><div class="lbl">members</div><div>${d.n_members}</div></div></div>`;
+  const p=d.probability, [word,col]=verdict(p), o=odds(p);
+  const [agTitle,agBody]=agreement(d.dispersion,d.n_members);
+  const ok=d.members.filter(m=>m.ok);
 
-  if(d.independence_warning) h+=`<div class="warn">⚠ ${esc(d.independence_warning)}</div>`;
+  let h=`<div class="card">
+    <p class="headline" style="color:${col}">${word}</p>
+    <p class="sub">There is about a <b>${(p*100).toFixed(0)}% chance</b> of this happening${o?' — '+o:''}.</p>
+    <div class="meter"><i style="width:${Math.max(p*100,1.5)}%;background:${col}"></i></div>
+    <div class="scale"><span>Won't happen</span><span>Will happen</span></div>`;
 
-  h+='<h3>Members</h3>';
-  for(const m of d.members){
-    if(!m.ok){h+=`<div class="mem"><span class="n">${esc(m.name)}</span>
-      <span class="v" style="color:var(--bad)">fail</span>
-      <span class="cite">${esc(m.error||'')}</span></div>`;continue;}
-    h+=`<div class="mem"><span class="n">${esc(m.name)}</span>
-      <span class="v">${pct(m.probability)}</span>
-      <span><span class="bar"><i style="width:${(m.probability*100).toFixed(1)}%;background:${colorFor(m.probability)}"></i></span></span>`;
-    if(m.reasoning) h+=`<div class="why">${esc(m.reasoning)}</div>`;
-    h+=`<div class="cite">cites ${m.citations.length?esc(m.citations.join(', ')):'nothing'} · ${esc(m.model)}</div></div>`;
+  if(agTitle) h+=`<div class="agree"><b>${esc(agTitle)}</b> <span>${esc(agBody)}</span></div>`;
+  if(d.independence_warning)
+    h+=`<div class="flag"><b>Worth knowing:</b> every advisor here is powered by the
+        same AI model, so they tend to make the same mistakes. Their agreement means
+        less than it looks. Installing more models fixes this.</div>`;
+
+  h+=`<div class="qa"><h4>What this actually means</h4>
+      <p>${esc(d.n_members)} AI advisors, each deliberately given a different outlook,
+      looked at today's live market data and each gave their own estimate. The number
+      above combines them. It is a considered guess, not a prediction — nobody can
+      predict markets.</p></div>`;
+
+  h+=`<details><summary>See what each advisor said</summary><div class="body">`;
+  for(const m of ok){
+    const [w,c]=verdict(m.probability);
+    h+=`<div class="person">
+      <span class="pct" style="color:${c}">${(m.probability*100).toFixed(0)}%</span>
+      <span class="who"><span class="nm">${esc(m.name.replace(/_/g,' '))}</span>
+      <div class="rl">${esc(ROLES[m.name]||'')}</div>
+      ${m.reasoning?`<div class="sy">${esc(m.reasoning)}</div>`:''}</span></div>`;
   }
+  const bad=d.members.length-ok.length;
+  if(bad) h+=`<p class="sub" style="margin-top:10px">${bad} advisor${bad>1?'s':''} failed to answer and ${bad>1?'were':'was'} left out.</p>`;
+  h+=`</div></details>`;
 
-  if(d.dissent?.length){h+='<h3 style="margin-top:14px">Dissent</h3>';
-    for(const x of d.dissent) h+=`<div class="dissent">${esc(x)}</div>`;}
-  if(d.counterargument) h+=`<h3 style="margin-top:14px">Strongest counterargument</h3>
-    <div class="dissent">${esc(d.counterargument)}</div>`;
+  if(d.dissent?.length||d.counterargument){
+    h+=`<details><summary>See the strongest argument against this answer</summary><div class="body">`;
+    if(d.counterargument) h+=`<p class="sub">${esc(d.counterargument)}</p>`;
+    h+=`</div></details>`;
+  }
 
   if(d.evidence?.length){
-    h+='<h3 style="margin-top:14px">Evidence used</h3><div class="ev">';
+    h+=`<details><summary>See the ${d.evidence.length} facts they used</summary><div class="body"><div class="rows">`;
     for(const e of d.evidence)
-      h+=`<span class="id">${esc(e.id)}</span><span class="lb">${esc(e.label)}</span><span class="vl">${num(e.value)}</span>`;
-    h+='</div>';
+      h+=`<div class="row"><span class="k">${esc(nice(e.label))}</span><span class="v">${fmt(e.value)}</span></div>`;
+    h+=`</div><p class="sub" style="margin-top:10px">All figures pulled live from the
+        RBI, the NSE and public data sources. Advisors may only use these — they are
+        not allowed to invent numbers.</p></div></details>`;
   }
-  for(const c of (d.evidence_caveats||[])) h+=`<div class="warn">${esc(c)}</div>`;
-  if(d.notes?.length) h+=`<div class="note">${esc(d.notes.join('\n'))}</div>`;
-  h+=`<div class="note">This is calibrated uncertainty, not a prediction. Dispersion is part of the answer — a tight consensus from correlated models is not evidence.</div>`;
-  return h+'</div>';
+
+  h+=`<details><summary>Technical details</summary><div class="body">
+      <div class="rows">
+        <div class="row"><span class="k">Combined probability</span><span class="v">${(p*100).toFixed(2)}%</span></div>
+        <div class="row"><span class="k">Spread between advisors</span><span class="v">${d.dispersion?.toFixed(3)??'—'}</span></div>
+        <div class="row"><span class="k">Advisors answering</span><span class="v">${d.n_members}</span></div>
+        <div class="row"><span class="k">Resolves on</span><span class="v">${esc(d.resolves)}</span></div>
+      </div>
+      <p class="sub" style="margin-top:10px;white-space:pre-wrap">${esc((d.notes||[]).join('\n'))}</p>
+      </div></details>`;
+
+  return h+`<p class="foot">This is an estimate of uncertainty, not advice. Do not
+    make financial decisions from it.</p></div>`;
 }
 
 function renderData(d){
-  let h='<div class="card"><h3>Live values'+(d.exact_match?'':' — no exact match, showing everything')+'</h3><div class="ev">';
-  for(const m of d.matches)
-    h+=`<span class="id">${esc(m.source)}</span><span class="lb">${esc(m.label)}</span><span class="vl">${num(m.value)} ${esc(m.unit||'')}</span>`;
-  h+='</div>';
-  for(const c of (d.caveats||[])) h+=`<div class="warn">${esc(c)}</div>`;
-  return h+`<div class="note">${esc(d.note)} · as of ${esc(d.as_of)}</div></div>`;
+  let h=`<div class="card"><p class="headline">Live figures</p>
+    <p class="sub">Read straight from the source. No AI involved, nothing estimated.</p>
+    <div class="rows" style="margin-top:14px">`;
+  for(const m of d.matches.slice(0,14))
+    h+=`<div class="row"><span class="k">${esc(nice(m.label))}</span>
+        <span class="v">${fmt(m.value)}${m.unit==='pct'?'%':m.unit==='INR'?'':m.unit?' '+esc(m.unit):''}</span></div>`;
+  h+=`</div>`;
+  if(!d.exact_match) h+=`<p class="sub" style="margin-top:12px">Couldn't match that exactly, so here's everything currently available.</p>`;
+  return h+`<p class="foot">Source: RBI and NSE, fetched just now.</p></div>`;
 }
 
 function renderRisk(d){
-  let h='<div class="card"><h3>Stress scenarios</h3><div class="ev">';
-  for(const s of d.scenarios)
-    h+=`<span class="id"></span><span class="lb">${esc(s.name)}</span><span class="vl" style="color:${s.pnl_pct<-0.2?'var(--bad)':s.pnl_pct<-0.05?'var(--warn)':'var(--fg)'}">${(s.pnl_pct*100).toFixed(1)}% · ₹${s.pnl_inr_cr} cr</span>`;
-  h+='</div>';
-  if(d.unmodelled_exposures?.length)
-    h+=`<div class="warn">⚠ Unmodelled exposure, treated as zero: ${esc(d.unmodelled_exposures.join(', '))}</div>`;
-  return h+`<div class="note">${esc(d.note)}</div></div>`;
+  let h=`<div class="card"><p class="headline">If history repeated</p>
+    <p class="sub">What an example portfolio would lose in each of these real past
+    crises. This uses a sample portfolio, not yours.</p><div class="rows" style="margin-top:14px">`;
+  for(const s of d.scenarios.slice(0,7)){
+    const c=s.pnl_pct<-0.3?'var(--yes)':s.pnl_pct<-0.1?'var(--mid)':'var(--fg)';
+    h+=`<div class="row"><span class="k">${esc(s.name)}</span>
+        <span class="v" style="color:${c}">${(s.pnl_pct*100).toFixed(0)}%</span></div>`;
+  }
+  return h+`</div><p class="foot">Based on what actually happened in Indian markets
+    during each of these events.</p></div>`;
 }
 
-async function showList(path,fmt){
-  const r=await fetch(api(path)),d=await r.json();add(fmt(d),'sys');
+/* ---------- plumbing ---------- */
+async function health(){
+  try{const d=await(await fetch(api('/api/health'))).json();
+    stEl.textContent=d.distinct_model_families<2?'1 AI model':`${d.models.length} AI models`;
+  }catch(e){stEl.textContent='offline';}
 }
 
-const HELP=`Vyuha — an open risk engine for Indian markets.
+const EXAMPLES=[
+  'Will the Nifty 50 fall below 22,900 in the next 30 days?',
+  'What is the repo rate right now?',
+  'What happens to a portfolio in a market crash?'
+];
 
-Ask a forecastable question and a council of ten deliberately-biased models
-answers with a calibrated probability, the evidence each member cited, and the
-disagreement between them.
-
-  Will the Nifty 50 close below 22,900 in the next 30 days?
-  What is the repo rate?
-  Stress test a large-cap heavy book
-
-Commands
-  /help        this
-  /evidence    live evidence packet the council is reasoning from
-  /personas    the ten members and the bias each argues from
-  /sources     data source catalogue and what is verified working
-
-The precision limits are documented — no system can resolve 0.00001% moves;
-that is below NSE tick size. See docs/PRECISION.md in the repo.`;
+function intro(){
+  let h=`<div class="intro"><h2>Ask a question about Indian markets.</h2>
+    <p>Ten AI advisors — each given a deliberately different outlook — look at live
+    data from the RBI and the stock exchange, then tell you how likely something is
+    and how much they disagreed.</p>
+    <p>You can also just ask for a number, like today's repo rate.</p>
+    <div class="chips">`;
+  for(const e of EXAMPLES) h+=`<button class="chip" type="button" data-q="${esc(e)}">${esc(e)}</button>`;
+  return h+`</div></div>`;
+}
 
 async function submit(text){
   if(busy)return; busy=true; go.disabled=true;
-  add(`<span class="p">&gt;</span> ${esc(text)}`,'user');
-
-  const cmd=text.trim().toLowerCase();
+  document.querySelector('.intro')?.remove();
+  add(esc(text),'you');
+  const pending=add('<span class="load">Thinking</span>');
   try{
-    if(cmd==='/help'){add(esc(HELP),'sys');return;}
-    if(cmd==='/evidence'){
-      return showList('/api/evidence',d=>{
-        let h='<div class="card"><h3>Evidence packet · '+esc(d.fingerprint)+'</h3><div class="ev">';
-        for(const e of d.items) h+=`<span class="id">${esc(e.id)}</span><span class="lb">${esc(e.label)}</span><span class="vl">${num(e.value)} ${esc(e.unit||'')}</span>`;
-        h+='</div>';
-        for(const c of (d.caveats||[])) h+=`<div class="warn">${esc(c)}</div>`;
-        return h+`<div class="note">as of ${esc(d.as_of)}</div></div>`;});
-    }
-    if(cmd==='/personas'){
-      return showList('/api/personas',d=>{
-        let h='<div class="card"><h3>Council</h3>';
-        for(const p of d) h+=`<div style="margin-bottom:10px"><b>${esc(p.name)}</b> — ${esc(p.title)}
-          <div class="cite">${esc(p.bias)}</div></div>`;
-        return h+'</div>';});
-    }
-    if(cmd==='/sources'){
-      return showList('/api/sources',d=>{
-        const s=d.summary;
-        let h=`<div class="card"><h3>Sources — ${s.working} working · ${s.fragile} fragile · ${s.blocked} blocked · ${s.planned} planned</h3><div class="ev">`;
-        for(const x of d.sources.filter(x=>x.status!=='planned'))
-          h+=`<span class="id" style="color:${x.status==='working'?'var(--good)':x.status==='blocked'?'var(--bad)':'var(--warn)'}">${esc(x.status)}</span><span class="lb">${esc(x.name)}</span><span class="vl">${esc(x.verified||'—')}</span>`;
-        return h+`</div><div class="note">${s.planned} more catalogued but not yet wired.</div></div>`;});
-    }
-
-    const pending=add('<span class="spin">thinking</span>','sys');
     const r=await fetch(api('/api/ask/stream'),{method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({question:text,rounds:2,horizon_days:30})});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-
-    const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+    if(!r.ok) throw new Error('Server error '+r.status);
+    const rd=r.body.getReader(),dec=new TextDecoder(); let buf='';
     while(true){
       const{done,value}=await rd.read(); if(done)break;
       buf+=dec.decode(value,{stream:true});
       const parts=buf.split('\n\n'); buf=parts.pop();
-      for(const p of parts){
-        const ev=(p.match(/^event: (.+)$/m)||[])[1];
-        const dl=(p.match(/^data: ([\s\S]+)$/m)||[])[1];
+      for(const part of parts){
+        const ev=(part.match(/^event: (.+)$/m)||[])[1];
+        const dl=(part.match(/^data: ([\s\S]+)$/m)||[])[1];
         if(!ev||!dl)continue;
         let d; try{d=JSON.parse(dl)}catch(e){continue}
         if(ev==='status'){
-          let s=d.stage;
-          if(d.members) s+=` — ${d.members.join(', ')}`;
-          pending.innerHTML=`<span class="spin">${esc(s)}</span>`;
-        } else if(ev==='error'){
-          pending.className='msg err';pending.textContent='Error: '+d.error;
-        } else if(ev==='done'){
+          const nice={'classified':'Working out what you asked',
+            'assembling point-in-time evidence':'Fetching live market data',
+            'convening council':'Asking the advisors',
+            'fetching live data':'Fetching live market data',
+            'running stress scenarios':'Checking past crises'}[d.stage]||d.stage;
+          pending.innerHTML=`<span class="load">${esc(nice)}</span>`;
+        }else if(ev==='error'){
+          pending.className='err'; pending.textContent='Something went wrong: '+d.error;
+        }else if(ev==='done'){
           pending.remove();
           add(d.route==='council'?renderCouncil(d):d.route==='data'?renderData(d):renderRisk(d));
         }
       }
     }
-  }catch(e){add('Error: '+esc(e.message),'err');}
-  finally{busy=false;go.disabled=false;qEl.focus();}
+  }catch(e){ pending.className='err';
+    pending.textContent='Could not get an answer: '+e.message; }
+  finally{ busy=false; go.disabled=false; qEl.focus(); }
 }
 
+log.addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(c) submit(c.dataset.q);});
 form.addEventListener('submit',e=>{e.preventDefault();
   const t=qEl.value.trim(); if(!t)return; qEl.value=''; qEl.style.height='auto'; submit(t);});
 qEl.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}});
 qEl.addEventListener('input',()=>{qEl.style.height='auto';
-  qEl.style.height=Math.min(qEl.scrollHeight,160)+'px';});
+  qEl.style.height=Math.min(qEl.scrollHeight,150)+'px';});
 
-health(); setInterval(health,30000);
-add(esc(HELP),'sys');
+add(intro());
+health(); setInterval(health,60000);
 </script>
 </body>
 </html>

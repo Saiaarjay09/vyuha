@@ -1,0 +1,155 @@
+================================================================================
+  VYUHA - Indian markets, explained
+  How to use it
+================================================================================
+
+WEBSITE
+--------------------------------------------------------------------------------
+
+  https://haven.taila6d3cb.ts.net/vyuha
+
+  Open it in any browser, on a phone or a computer. Nothing to install, no
+  account, no login.
+
+  Note: the site runs on a personal Mac. If that machine is asleep or offline,
+  the page will not load. It is not a hosted commercial service.
+
+
+WHAT IT IS
+--------------------------------------------------------------------------------
+
+  Ask a question about Indian markets in plain English and get an answer
+  grounded in live data.
+
+  Behind the page, ten AI advisors each look at the same real figures - pulled
+  live from the Reserve Bank of India and the National Stock Exchange - and
+  each gives its own estimate. Every advisor is deliberately given a DIFFERENT
+  outlook: one worries about inflation, another about weak growth, one thinks
+  shares are overpriced, another follows the trend, and one is there purely to
+  argue against whatever the others conclude.
+
+  Their answers are then combined into a single number.
+
+  Why bother with ten instead of one? Because a single opinion hides its own
+  blind spots. Ten opinions that disagree show you where the uncertainty
+  actually is. The disagreement is part of the answer, not noise to hide.
+
+
+HOW TO USE IT
+--------------------------------------------------------------------------------
+
+  Type a question and press Ask. Three kinds of question work:
+
+  1. "WILL SOMETHING HAPPEN?" - you get a probability.
+
+       Will the Nifty 50 fall below 22,900 in the next 30 days?
+       Will the RBI cut rates before December?
+       Is the rupee likely to weaken past 96 this month?
+
+     Best results come from questions with a clear yes/no answer and a
+     timeframe. "Will the market go up?" is too vague to answer well.
+
+  2. "WHAT IS X RIGHT NOW?" - you get the live figure, with no AI involved
+     at all. Nothing is estimated or guessed; it is read straight from the
+     source.
+
+       What is the repo rate right now?
+       What is the India VIX?
+       Where is the Nifty trading?
+
+  3. "WHAT IF THINGS GO WRONG?" - you get losses an example portfolio would
+     have taken in real past crises.
+
+       What happens to a portfolio in a market crash?
+       Stress test against a taper tantrum
+
+
+READING THE ANSWER
+--------------------------------------------------------------------------------
+
+  You get a plain-English verdict first - "Unlikely", "Too close to call",
+  "Likely" - and the percentage behind it.
+
+  Under that, a line about whether the advisors agreed:
+
+    "They nearly all agreed"      the estimate is reasonably firm
+    "They mostly agreed"          a few leaned differently, no real split
+    "They partly disagreed"       treat it as a rough guide
+    "They disagreed a lot"        there is no reliable answer here
+
+  That last one is not a failure. If ten advisors looking at the same data
+  reach opposite conclusions, the honest output is "nobody knows", and the
+  page says so rather than inventing false confidence.
+
+  Three expandable sections hold the detail:
+
+    See what each advisor said     every individual estimate and its reasoning
+    Strongest argument against     the best case for the opposite conclusion
+    See the facts they used        every figure they were given
+
+  Advisors may ONLY use the figures they are shown. They are not allowed to
+  invent numbers, and if one cites a figure it was never given, the system
+  flags it.
+
+
+WHAT IT CANNOT DO
+--------------------------------------------------------------------------------
+
+  * It cannot predict the market. Nobody can. It estimates how likely
+    something is, and it is often wrong.
+
+  * It is not investment advice. It is analytical software. Do not buy or
+    sell anything because of a number on this page.
+
+  * It cannot detect tiny movements. There is a hard physical limit here: the
+    smallest price change the NSE can even represent is 5 paise. Any claim to
+    detect moves finer than that is false, no matter who makes it.
+
+  * Its data has gaps. Some Indian government sources publish weeks late,
+    revise their numbers afterwards, or have stopped publishing altogether.
+    The system records what it does not have rather than filling holes with
+    guesses.
+
+  * Right now all ten advisors run on the same AI model, so they tend to make
+    the same mistakes. The page warns you when this is the case. Installing
+    more models fixes it.
+
+
+RUNNING IT YOURSELF
+--------------------------------------------------------------------------------
+
+  Everything is open source under the Apache 2.0 licence.
+
+    git clone git@github.com:Saiaarjay09/vyuha.git
+    cd vyuha
+    python3 -m venv .venv && source .venv/bin/activate
+    pip install -e ".[api,dev]"
+    ./scripts/serve.sh
+
+  Then open http://127.0.0.1:8601
+
+  For the AI advisors you also need Ollama (https://ollama.com). More model
+  families means genuinely independent advisors:
+
+    ollama pull qwen2.5:32b
+    ollama pull llama3.1:70b
+    ollama pull deepseek-r1
+    ollama pull gemma2:27b
+
+  Check everything is wired up:
+
+    vyuha doctor
+
+
+MORE
+--------------------------------------------------------------------------------
+
+  README.md            what the system does and how it is built
+  docs/PRECISION.md    what it can and cannot resolve, with the arithmetic
+  docs/ARCHITECTURE.md how the pieces fit together
+  docs/DEPLOY.md       running and publishing it
+
+
+--------------------------------------------------------------------------------
+  Not investment advice. No warranty. Apache 2.0.
+--------------------------------------------------------------------------------

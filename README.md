@@ -1,5 +1,9 @@
 # Vyuha
 
+**Live: https://haven.taila6d3cb.ts.net/vyuha** — plain-English usage guide in
+[HOW_TO_USE.txt](HOW_TO_USE.txt). (The site runs on a personal machine; if it is
+asleep, the page will not load.)
+
 **व्यूह** — *a battle formation: many independent units, each with its own
 vantage, arrayed into a single structure.* It also means, simply, *array*.
 
@@ -241,9 +245,11 @@ vyuha council record
 
 ## Web console
 
-A text-first interface: ask a question the way you would ask a chatbot, and the
-council answers with a calibrated probability, the evidence each member cited,
-and the disagreement between them.
+Live at **https://haven.taila6d3cb.ts.net/vyuha**. Written for someone who has
+never used a risk system: you get a plain-English verdict ("Unlikely — about a
+23% chance, roughly 1 in 4") before any number, a sentence on whether the
+advisors agreed, and everything technical one click away rather than in your
+face. Non-technical usage guide: [HOW_TO_USE.txt](HOW_TO_USE.txt).
 
 ```bash
 ./scripts/serve.sh                      # http://127.0.0.1:8601
