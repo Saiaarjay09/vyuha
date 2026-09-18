@@ -63,7 +63,8 @@ class AskRequest(BaseModel):
 _DATA_PAT = re.compile(
     r"\b(repo rate|crr\b|slr\b|bank rate|reverse repo|usdinr|usd/inr|rupee|"
     r"vix|nifty|sensex|bank nifty|fii|dii|put.?call|pcr|option chain|"
-    r"nav|mutual fund)\b", re.I,
+    r"nav|mutual fund|gold|silver|brent|crude|wti|copper|wheat|"
+    r"s&p|sp500|nasdaq|dow|vix|dollar|treasury|fed funds)\b", re.I,
 )
 _RISK_PAT = re.compile(r"\b(var\b|value at risk|stress|scenario|drawdown|volatility|"
                        r"tail risk|expected shortfall)\b", re.I)
@@ -74,7 +75,8 @@ _ASSET_HINTS: dict[str, tuple[str, ...]] = {
     "real_estate": ("hous", "property", "real estate", "realty", "flat", "apartment",
                     "rent", "mortgage", "home loan", "residex", "land price"),
     "commodity": ("gold", "silver", "crude", "oil price", "commodity", "commodities",
-                  "copper", "steel", "wheat", "sugar"),
+                  "copper", "aluminium", "aluminum", "wheat", "brent", "wti",
+                  "natural gas", "bullion"),
     "bond": ("bond", "g-sec", "gsec", "gilt", "debenture", "yield curve",
              "fixed income", "debt fund"),
     "etf": ("etf", "exchange traded", "index fund", "niftybees", "goldbees"),
@@ -83,11 +85,23 @@ _ASSET_HINTS: dict[str, tuple[str, ...]] = {
 }
 
 
+# Substring matching is not safe here. "Will Brent go above 140?" matched the
+# real-estate hint "rent" and was refused as an unanswerable housing question.
+# Hints are matched on word boundaries instead, with a trailing wildcard so
+# "hous" still catches housing, house and houses.
+_HINT_RE: dict[str, re.Pattern[str]] = {
+    ac: re.compile(
+        r"(?<![a-z])(" + "|".join(re.escape(h.strip()) for h in hints) + r")[a-z]*",
+        re.I,
+    )
+    for ac, hints in _ASSET_HINTS.items()
+}
+
+
 def detect_asset_class(text: str) -> str | None:
-    low = text.lower()
     best: tuple[int, str] | None = None
-    for ac, hints in _ASSET_HINTS.items():
-        score = sum(1 for h in hints if h in low)
+    for ac, pat in _HINT_RE.items():
+        score = len(pat.findall(text))
         if score and (best is None or score > best[0]):
             best = (score, ac)
     return best[1] if best else None
@@ -136,7 +150,82 @@ def classify(text: str) -> str:
 # ------------------------------------------------------------------- evidence
 
 
-def build_evidence(as_of: dt.datetime | None = None):
+_GLOBAL_HINTS = (
+    # commodities
+    "gold", "silver", "crude", "brent", "wti", "oil", "copper", "aluminium",
+    "aluminum", "wheat", "commodity", "commodities", "natural gas", "bullion",
+    # US markets and policy
+    "s&p", "sp500", "s&p500", "nasdaq", "dow", "nyse", "wall street",
+    "us stock", "us equit", "us market", "us share", "america", "american",
+    "usa", "fed ", "federal reserve", "treasury", "dollar",
+    # general international framing
+    "global", "world", "international", "abroad", "overseas", "foreign",
+    "outside india", "other countries", "developed market", "emerging market",
+    # major economies an Indian investor might ask about
+    "europe", "european", "euro ", "eurozone", "japan", "japanese", "china",
+    "chinese", "uk ", "u.k.", "britain", "british", "germany", "german",
+    "singapore", "dubai", "uae", "brazil", "russia", "korea", "taiwan",
+)
+
+
+def wants_global(text: str) -> bool:
+    low = f" {text.lower()} "
+    return any(h in low for h in _GLOBAL_HINTS)
+
+
+def build_global_evidence(packet) -> None:
+    """Add commodities, world indices and FX, plus their rupee equivalents.
+
+    The rupee conversions are the point. A question about gold asked from India
+    is really a question about gold *in rupees*, and the two can diverge sharply
+    -- the dollar price and the rupee price of the same ounce have moved in
+    opposite directions for months at a time.
+    """
+    from vyuha.ingest.globalmarkets import commodity_snapshot, fx_spot, global_snapshot
+
+    usdinr = None
+    try:
+        rates = _cached("fx_spot", lambda: fx_spot("USD"), ttl=3600)
+        usdinr = float(rates.get("INR")) if rates.get("INR") else None
+        if usdinr:
+            packet.add("USDINR_SPOT", round(usdinr, 3), source="open.er-api",
+                       event_date=dt.date.today())
+    except Exception as exc:  # noqa: BLE001
+        packet.caveats.append(f"FX spot unavailable: {exc}")
+
+    try:
+        existing = {i.label for i in packet.items}
+        for _, r in _cached("commodities", commodity_snapshot).iterrows():
+            if r["error"] or r["value"] is None:
+                continue
+            name = str(r["commodity"]).upper()
+            # BRENT already arrives in the India block via FRED; adding it again
+            # under a second label would let a member cite the same fact twice
+            # as if it were two pieces of corroborating evidence.
+            if name in existing:
+                continue
+            packet.add(f"{name}_USD", float(r["value"]),
+                       unit=str(r["unit"]), event_date=r["date"], source=str(r["source"]))
+            # Gold and crude are what an Indian reader actually prices in rupees.
+            if usdinr and str(r["commodity"]) in ("gold", "silver", "brent"):
+                packet.add(f"{name}_INR",
+                           round(float(r["value"]) * usdinr, 1),
+                           unit=f"INR per {str(r['unit']).split('/')[-1]}",
+                           event_date=r["date"], source="vyuha (converted)")
+    except Exception as exc:  # noqa: BLE001
+        packet.caveats.append(f"commodities unavailable: {exc}")
+
+    try:
+        for _, r in _cached("global_idx", global_snapshot).iterrows():
+            if r["error"] or r["value"] is None:
+                continue
+            packet.add(str(r["series"]).upper(), float(r["value"]),
+                       unit=str(r["unit"]), event_date=r["date"], source="FRED")
+    except Exception as exc:  # noqa: BLE001
+        packet.caveats.append(f"global indices unavailable: {exc}")
+
+
+def build_evidence(as_of: dt.datetime | None = None, include_global: bool = False):
     """Assemble a live evidence packet from the sources verified working."""
     from vyuha.council import EvidencePacket
     from vyuha.ingest.base import NSESession
@@ -192,6 +281,9 @@ def build_evidence(as_of: dt.datetime | None = None):
     except Exception as exc:  # noqa: BLE001
         packet.caveats.append(f"FRED unavailable: {exc}")
 
+    if include_global:
+        build_global_evidence(packet)
+
     if not packet.items:
         packet.caveats.append(
             "No live evidence could be fetched. Members must answer from base "
@@ -217,8 +309,8 @@ def health() -> dict:
 
 
 @app.get("/api/evidence")
-def evidence() -> dict:
-    p = build_evidence()
+def evidence(scope: str = "india") -> dict:
+    p = build_evidence(include_global=scope in ("global", "all"))
     return {
         "as_of": p.as_of.isoformat(),
         "fingerprint": p.fingerprint(),
@@ -325,7 +417,7 @@ def _run_ask(req: AskRequest, emit=None) -> dict:
 def _answer_data(question: str, emit=None) -> dict:
     if emit:
         emit("status", {"stage": "fetching live data"})
-    p = build_evidence()
+    p = build_evidence(include_global=wants_global(question))
     words = [w for w in re.split(r"\W+", question.lower()) if len(w) > 2]
     matches = [
         i for i in p.items
@@ -381,7 +473,7 @@ def _answer_council(req: AskRequest, emit=None) -> dict:
 
     if emit:
         emit("status", {"stage": "assembling point-in-time evidence"})
-    packet = build_evidence()
+    packet = build_evidence(include_global=wants_global(req.question))
 
     resolves = dt.date.today() + dt.timedelta(days=req.horizon_days)
     q = Question(

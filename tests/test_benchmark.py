@@ -185,12 +185,13 @@ def test_gap_report_names_both_sides():
 
 
 def test_uncovered_asset_classes_are_refused_not_guessed():
+    """Housing still has no source. Gold used to be here too, until LBMA and
+    FRED commodities were wired -- so it must now be answered, not refused."""
     from vyuha.api.server import coverage_gap
 
-    for q in ["Will house prices in Mumbai rise?", "Will gold cross 80000?"]:
-        gap = coverage_gap(q)
-        assert gap is not None, f"{q!r} should be refused"
-        assert gap["route"] == "no_data"
+    gap = coverage_gap("Will house prices in Mumbai rise?")
+    assert gap is not None and gap["route"] == "no_data"
+    assert coverage_gap("Will gold cross 80000?") is None
 
 
 def test_covered_asset_classes_are_answered():

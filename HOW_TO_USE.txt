@@ -18,8 +18,20 @@ WEBSITE
 WHAT IT IS
 --------------------------------------------------------------------------------
 
-  Ask a question about Indian markets in plain English and get an answer
-  grounded in live data.
+  Ask a question about markets - in India or anywhere in the world - in plain
+  English, and get an answer grounded in live data.
+
+  Indian markets are covered in the most depth: the RBI, the NSE, options,
+  institutional flows. Beyond that: gold and silver at the London fix, crude,
+  metals and grains; the S&P 500, Nasdaq and world interest rates; 166
+  currencies; and economic data for 217 countries.
+
+  IMPORTANT FOR AN INDIAN INVESTOR: foreign prices are shown in rupees as well
+  as dollars. Your return on a foreign asset is the asset's move AND the
+  rupee's move. Over the year to September 2026 the S&P 500 rose 15.2% in
+  dollars, but the rupee weakened, so an Indian investor received 25.4% - the
+  currency was a THIRD of the return. Tools that quote only the dollar figure
+  are telling you the wrong number.
 
   Behind the page, ten AI advisors each look at the same real figures - pulled
   live from the Reserve Bank of India and the National Stock Exchange - and
@@ -44,7 +56,8 @@ HOW TO USE IT
 
        Will the Nifty 50 fall below 22,900 in the next 30 days?
        Will the RBI cut rates before December?
-       Is the rupee likely to weaken past 96 this month?
+       Will gold cross 5,000 dollars an ounce this year?
+       Should an Indian investor expect US stocks to beat the Nifty?
 
      Best results come from questions with a clear yes/no answer and a
      timeframe. "Will the market go up?" is too vague to answer well.
@@ -54,8 +67,9 @@ HOW TO USE IT
      source.
 
        What is the repo rate right now?
-       What is the India VIX?
-       Where is the Nifty trading?
+       What is the price of gold?
+       Where is the S&P 500 trading?
+       What is the dollar worth in rupees?
 
   3. "WHAT IF THINGS GO WRONG?" - you get losses an example portfolio would
      have taken in real past crises.
@@ -122,6 +136,9 @@ WHAT IT CANNOT DO
   * It cannot detect tiny movements. There is a hard physical limit here: the
     smallest price change the NSE can even represent is 5 paise. Any claim to
     detect moves finer than that is false, no matter who makes it.
+
+  * Housing and property are NOT covered at all, and it will tell you so
+    rather than guess. Per-country share prices outside the US are also thin.
 
   * Its data has gaps. Some Indian government sources publish weeks late,
     revise their numbers afterwards, or have stopped publishing altogether.

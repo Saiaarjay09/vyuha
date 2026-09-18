@@ -18,11 +18,13 @@ app = typer.Typer(
     help="Vyuha - an open risk engine for Indian markets, with a bias-diverse LLM council.",
 )
 sources_app = typer.Typer(help="Inspect and fetch data sources.")
+world_app = typer.Typer(help="Global markets: commodities, world indices, FX, countries.")
 council_app = typer.Typer(help="Run and score the forecasting council.")
 risk_app = typer.Typer(help="Risk analytics.")
 app.add_typer(sources_app, name="sources")
 app.add_typer(council_app, name="council")
 app.add_typer(risk_app, name="risk")
+app.add_typer(world_app, name="world")
 
 console = Console()
 
@@ -377,6 +379,136 @@ def benchmark(
                   "comparable to a 'on any session' council question. Risk-neutral "
                   "probabilities overstate downside; the de-biased row corrects "
                   "crudely for that.[/]")
+
+
+@world_app.command("commodities")
+def world_commodities(
+    inr: bool = typer.Option(True, help="Also show the rupee price."),
+) -> None:
+    """Live commodity prices, in dollars and rupees."""
+    from vyuha.ingest.globalmarkets import commodity_snapshot, fx_spot
+
+    with console.status("fetching commodities..."):
+        snap = commodity_snapshot()
+        rate = None
+        if inr:
+            try:
+                rate = fx_spot("USD").get("INR")
+            except Exception:  # noqa: BLE001
+                pass
+
+    t = Table(show_header=True, header_style="bold", title="Commodities")
+    cols = ["commodity", "price", "unit", "as of", "source"]
+    if rate:
+        cols.insert(2, f"in INR (@{rate:.2f})")
+    for c in cols:
+        t.add_column(c, overflow="fold")
+    for _, r in snap.iterrows():
+        if r["error"]:
+            t.add_row(str(r["commodity"]), "[red]failed[/]",
+                      *([""] * (len(cols) - 3)), str(r["error"])[:40])
+            continue
+        row = [str(r["commodity"]), f"{r['value']:,.2f}"]
+        if rate:
+            row.append(f"{r['value'] * rate:,.0f}")
+        row += [str(r["unit"]), str(r["date"]), str(r["source"])]
+        t.add_row(*row)
+    console.print(t)
+
+
+@world_app.command("indices")
+def world_indices() -> None:
+    """World equity indices and global interest rates."""
+    from vyuha.ingest.globalmarkets import global_snapshot
+
+    with console.status("fetching world markets..."):
+        snap = global_snapshot()
+    t = Table(show_header=True, header_style="bold", title="World markets")
+    for c in ("series", "value", "unit", "region", "as of"):
+        t.add_column(c)
+    for _, r in snap.iterrows():
+        if r["error"]:
+            t.add_row(str(r["series"]), "[red]failed[/]", "", "", str(r["error"])[:30])
+            continue
+        t.add_row(str(r["series"]), f"{r['value']:,.2f}", str(r["unit"]),
+                  str(r["region"]), str(r["date"]))
+    console.print(t)
+
+
+@world_app.command("inr")
+def world_inr(
+    asset: str = typer.Argument("gold", help="gold | silver | brent | wti | sp500 | nasdaq"),
+    since: str = typer.Option(None, help="Start date YYYY-MM-DD. Default: 1 year ago."),
+) -> None:
+    """What a foreign asset actually returned FOR A RUPEE INVESTOR.
+
+    Splits the return into the asset move and the currency move. This is the
+    number an Indian holder of a foreign asset needs and almost never sees: a
+    US fund reporting +15% delivered something different in Delhi, and the
+    difference is frequently a third of the total.
+    """
+    import datetime as _dt
+
+    import pandas as pd
+
+    from vyuha.ingest.globalmarkets import (
+        FRED_GLOBAL, commodity, global_index, inr_return_decomposition,
+    )
+
+    with console.status(f"fetching {asset}..."):
+        try:
+            df = global_index(asset) if asset in FRED_GLOBAL else commodity(asset)
+        except ValueError as exc:
+            console.print(f"[red]{exc}[/]")
+            raise typer.Exit(1) from exc
+        start = pd.Timestamp(since) if since else (
+            pd.Timestamp(_dt.date.today()) - pd.Timedelta(days=365)
+        )
+        df = df[df["date"] >= start]
+        if len(df) < 2:
+            console.print("[red]not enough data in that window[/]")
+            raise typer.Exit(1)
+        d = inr_return_decomposition(df)
+
+    t = Table(show_header=True, header_style="bold",
+              title=f"{asset} for a rupee investor - {d['start']} to {d['end']}")
+    t.add_column("component"); t.add_column("return", justify="right")
+    t.add_row("the asset itself (local currency)", f"{d['local_return']:+.2%}")
+    t.add_row("the rupee moving", f"{d['currency_return']:+.2%}")
+    t.add_row("[bold]what you actually got, in INR[/]",
+              f"[bold]{d['total_inr_return']:+.2%}[/]")
+    console.print(t)
+    share = d["currency_share_of_return"]
+    if share == share:
+        console.print(f"[dim]Currency was {share:.0%} of the total return. "
+                      f"{d['currency']}INR went {d['start_fx']:.2f} -> {d['end_fx']:.2f}.[/]")
+
+
+@world_app.command("country")
+def world_country(
+    iso3: str = typer.Argument("IND", help="ISO3 code, e.g. IND, USA, CHN, BRA."),
+    indicator: str = typer.Option("gdp_growth", help="See WB_INDICATORS."),
+    last: int = typer.Option(10, help="Years to show."),
+) -> None:
+    """Macro history for any of 217 countries."""
+    from vyuha.ingest.globalmarkets import WB_INDICATORS, country_macro
+
+    if indicator not in WB_INDICATORS:
+        console.print(f"[yellow]known indicators:[/] {', '.join(WB_INDICATORS)}")
+    with console.status(f"fetching {iso3}..."):
+        try:
+            df = country_macro(iso3.upper(), indicator)
+        except RuntimeError as exc:
+            console.print(f"[red]{exc}[/]")
+            raise typer.Exit(1) from exc
+    t = Table(show_header=True, header_style="bold",
+              title=f"{iso3.upper()} - {indicator.replace('_', ' ')}")
+    t.add_column("year"); t.add_column("value", justify="right")
+    for _, r in df.tail(last).iterrows():
+        t.add_row(str(r["date"].year), f"{r['value']:,.2f}")
+    console.print(t)
+    console.print("[dim]World Bank, annual and revised for years afterwards. "
+                  "Context for comparing economies, not a timing signal.[/]")
 
 
 @risk_app.command("scenarios")

@@ -7,8 +7,10 @@ asleep, the page will not load.)
 **व्यूह** — *a battle formation: many independent units, each with its own
 vantage, arrayed into a single structure.* It also means, simply, *array*.
 
-An open-source risk and forecasting engine for Indian financial markets, built
-on freely available data and open-weight language models. Conceptually in the
+An open-source risk and forecasting engine built on freely available data and
+open-weight language models. Indian markets in depth, global markets through an
+Indian lens — every foreign price also shown in rupees, because a rupee
+investor's return is the asset's move *and* the currency's. Conceptually in the
 territory BlackRock's Aladdin occupies — portfolio risk, factor attribution,
 stress testing — with two things Aladdin does not have: it is inspectable, and
 it argues with itself before answering.
@@ -323,12 +325,30 @@ vyuha coverage
 
 | Asset class | Can answer? |
 |---|---|
-| Equity / shares, derivatives | **Yes** — indices, VIX, option chain, flows, factors, stress |
-| ETFs, mutual funds | **Yes, shallow** — prices and ~14,400 NAVs, no tracking-error analytics |
-| Currency | **Yes, basic** — RBI reference rates |
+| Indian equity, derivatives | **Yes** — indices, VIX, option chain, flows, factors, stress |
+| Commodities | **Yes** — gold & silver at the LBMA fix (daily since 1968), crude, gas, metals, grains |
+| Global equity & rates | **Yes** — S&P, Nasdaq, Dow, VIX, US/euro/Japan/UK yields, dollar index |
+| Currency | **Yes** — 30 currencies with history, 166 spot |
+| World macro | **Yes** — 217 countries |
+| ETFs, mutual funds | **Yes, shallow** — ~14,400 NAVs, no tracking-error analytics |
 | Bonds | **Weak** — policy corridor only; **no Indian G-sec curve** |
-| Real estate / housing | **No** — nothing wired |
-| Commodities | **No** — nothing wired |
+| Real estate / housing | **No** — nothing wired, and it says so |
+
+### The rupee lens
+
+Every foreign price is converted at the **contemporaneous** rate, and returns
+are decomposed into the asset move and the currency move:
+
+```bash
+vyuha world commodities     # gold, silver, crude, metals — in USD and INR
+vyuha world inr sp500       # what a rupee investor actually earned
+vyuha world country BRA     # macro for any of 217 countries
+```
+
+In the year to 2026-09-17 the S&P 500 returned **+15.2% in dollars**. The rupee
+weakened 8.9%, so an Indian investor received **+25.4%** — the currency was
+**35% of the return**. A global tool quoting only the dollar figure is telling
+an Indian reader the wrong number.
 
 Ask about housing and the system **refuses rather than guesses** — a language
 model would happily answer from memory with confident, sourceless numbers, which

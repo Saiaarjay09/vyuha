@@ -166,8 +166,8 @@ button.go:disabled{opacity:.35;cursor:not-allowed}
   <div class="mast">
     <h1>VYUHA</h1>
     <p class="sanskrit">व्यूह</p>
-    <div class="rule"><span>Indian Markets · Analysis</span></div>
-    <p class="strap">Ten advisors, deliberately disagreeing, reading today's data</p>
+    <div class="rule"><span>Global Markets · An Indian View</span></div>
+    <p class="strap">Ten advisors, deliberately disagreeing, reading today&rsquo;s data</p>
   </div>
 </header>
 
@@ -175,7 +175,7 @@ button.go:disabled{opacity:.35;cursor:not-allowed}
 
 <footer>
   <form id="f">
-    <textarea id="q" rows="1" placeholder="Ask about Indian markets…"></textarea>
+    <textarea id="q" rows="1" placeholder="Ask about any market — Nifty, gold, US stocks, the rupee…"></textarea>
     <button class="go" id="go" type="submit">Ask</button>
   </form>
   <div class="tip">Free and open source · Calibrated uncertainty, not investment advice</div>
@@ -200,7 +200,12 @@ const LABELS={
   INDIA_VIX:'India VIX (fear gauge)', NIFTY_MIDCAP_100:'Nifty Midcap 100',
   DII_NET_CASH:'Indian institutions bought', FII_FPI_NET_CASH:'Foreign investors bought',
   NIFTY_PUT_CALL_RATIO:'Put-call ratio', NIFTY_ATM_IV:'Options-implied volatility',
-  US10Y:'US 10-year yield', BRENT:'Brent crude'
+  US10Y:'US 10-year yield', BRENT:'Brent crude',
+  USDINR_SPOT:'Rupees per US dollar', SP500:'S&P 500', NASDAQ:'Nasdaq',
+  DOW:'Dow Jones', VIX:'US VIX', DOLLAR_INDEX:'US dollar index',
+  US_10Y:'US 10-year yield', US_2Y:'US 2-year yield', FED_FUNDS:'Fed funds rate',
+  EURO_10Y:'Euro area 10-year', JAPAN_10Y:'Japan 10-year', UK_10Y:'UK 10-year',
+  GOLD_INR:'Gold in rupees', SILVER_INR:'Silver in rupees', BRENT_INR:'Brent in rupees'
 };
 const nice=k=>LABELS[k]||k.replace(/_/g,' ').toLowerCase().replace(/^./,c=>c.toUpperCase());
 // Names that read naturally mid-sentence. The table labels above carry
@@ -354,16 +359,22 @@ async function health(){
 }
 
 const EXAMPLES=['Will the Nifty 50 fall below 22,900 in the next 30 days?',
-  'What is the repo rate right now?','What happens to a portfolio in a market crash?'];
+  'What is the price of gold right now?',
+  'Should an Indian investor expect US stocks to beat the Nifty this year?',
+  'What happens to a portfolio in a market crash?'];
 
 function intro(){
   return `<div class="intro">
-    <h2>Ask a question about Indian markets.</h2>
+    <h2>Ask about markets, anywhere in the world.</h2>
     <p>Ten AI advisors — each deliberately given a different outlook, from inflation
     hawk to trend-follower to one whose only job is to argue against the rest — read
-    live data from the Reserve Bank of India and the stock exchange. You get how likely
-    something is, and how much they disagreed.</p>
-    <p>You can also simply ask for a figure, like today's repo rate.</p>
+    live data and tell you how likely something is, and how much they disagreed.</p>
+    <p>Indian markets in depth: the RBI, the NSE, options, flows. Plus gold, silver,
+    crude and metals; the S&amp;P, Nasdaq and world interest rates; 166 currencies;
+    and economic data for 217 countries.</p>
+    <p><b>Prices are shown in rupees as well as dollars</b> — because a foreign
+    asset's return to an Indian investor is the asset's move <i>and</i> the rupee's,
+    and the currency is often a third of it.</p>
     <div class="eg"><div class="lbl">Try one</div>`+
     EXAMPLES.map(e=>`<button class="chip" type="button" data-q="${esc(e)}">${esc(e)}</button>`).join('')+
     `</div></div>`;

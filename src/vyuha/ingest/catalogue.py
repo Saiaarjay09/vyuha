@@ -142,10 +142,13 @@ CATALOGUE: tuple[SourceSpec, ...] = (
         "yahoo_chart", "Yahoo Finance Chart API", Domain.EQUITY,
         "https://query1.finance.yahoo.com/v8/finance/chart/",
         "OHLCV for NSE tickers (SYMBOL.NS), indices and global assets.",
-        Status.FRAGILE, "daily", "1 day", "Yahoo terms; personal use",
+        Status.BLOCKED, "daily", "1 day", "Yahoo terms; personal use",
         series=("PX_CLOSE", "PX_VOLUME"),
-        notes="Split/dividend adjusted series available, which makes it a useful "
-              "cross-check against unadjusted bhavcopy prices.",
+        notes="BLOCKED as of 2026-09-18: Yahoo returns HTTP 429 to this host for every "
+              "symbol, persistently, and now wants a cookie+crumb handshake. Adjusted "
+              "series would be a useful cross-check against unadjusted bhavcopy, so it "
+              "is worth revisiting. Commodities and world indices route via LBMA and "
+              "FRED instead.",
         asset_classes=(AssetClass.EQUITY, AssetClass.ETF,)
     ),
 
@@ -430,6 +433,76 @@ CATALOGUE: tuple[SourceSpec, ...] = (
               "equity multiples. One of the longest genuinely causal chains in this "
               "market, and it starts with weather.",
         asset_classes=(AssetClass.MACRO, AssetClass.COMMODITY,)
+    ),
+
+    # -------------------------------------------------- GLOBAL / COMMODITY --
+    SourceSpec(
+        "lbma_metals", "LBMA Precious Metal Benchmarks", Domain.COMMODITY,
+        "https://prices.lbma.org.uk/json/gold_pm.json",
+        "The London gold and silver fix in USD, GBP and EUR -- daily since 1968.",
+        Status.WORKING, "daily", "same day", "LBMA - public JSON",
+        series=("GOLD_USD_OZ", "SILVER_USD_OZ"), last_verified="2026-09-18",
+        asset_classes=(AssetClass.COMMODITY,),
+        notes="The price the physical market actually settles on, so a better "
+              "benchmark than a futures quote. ~14,700 observations. Gold matters "
+              "disproportionately to Indian investors and households, and FRED's "
+              "LBMA mirrors were discontinued, so this is fetched direct.",
+    ),
+    SourceSpec(
+        "fred_commodities", "Commodity Prices (via FRED)", Domain.COMMODITY,
+        "https://fred.stlouisfed.org/graph/fredgraph.csv",
+        "Brent, WTI, natural gas, copper, aluminium, wheat and a global "
+        "commodity index.",
+        Status.WORKING, "daily/monthly", "1-30 days", "free; see FRED terms",
+        series=("BRENT", "WTI", "NATGAS", "COPPER", "ALUMINIUM", "WHEAT"),
+        last_verified="2026-09-18", asset_classes=(AssetClass.COMMODITY,),
+        notes="Energy is daily; industrial metals and grains are monthly IMF series "
+              "and lag by weeks. Brent in INR is India's single largest external "
+              "macro exposure.",
+    ),
+    SourceSpec(
+        "fred_global_markets", "World Indices & Global Rates (via FRED)", Domain.GLOBAL,
+        "https://fred.stlouisfed.org/graph/fredgraph.csv",
+        "S&P 500, Nasdaq, Dow, VIX, US 2Y/10Y, fed funds, dollar index, and "
+        "euro-area, Japanese and UK 10-year yields.",
+        Status.WORKING, "daily", "1 day", "free; see FRED terms",
+        series=("SP500", "NASDAQ", "DJIA", "VIX", "US10Y", "US2Y", "DXY"),
+        last_verified="2026-09-18",
+        asset_classes=(AssetClass.EQUITY, AssetClass.BOND),
+        notes="Covers the US deeply and the other majors at the rate level. Not a "
+              "substitute for per-country equity data, which has no good free source.",
+    ),
+    SourceSpec(
+        "frankfurter_fx", "FX Rates & History (frankfurter / ECB)", Domain.FX,
+        "https://api.frankfurter.dev/v1/latest",
+        "ECB reference rates for 30 major currencies, with daily history.",
+        Status.WORKING, "daily", "same day", "ECB - public",
+        series=("USDINR", "EURINR", "GBPINR", "USDEUR"), last_verified="2026-09-18",
+        asset_classes=(AssetClass.CURRENCY,),
+        notes="Business days only -- the ECB does not publish at weekends, so do not "
+              "forward-fill into a daily return series without deciding what a "
+              "non-trading day means. The .app domain moved to .dev.",
+    ),
+    SourceSpec(
+        "open_er_api", "Spot FX, 166 currencies", Domain.FX,
+        "https://open.er-api.com/v6/latest/USD",
+        "Spot exchange rates for essentially every traded currency.",
+        Status.WORKING, "daily", "same day", "free tier, no key",
+        series=("FX_SPOT",), last_verified="2026-09-18",
+        asset_classes=(AssetClass.CURRENCY,),
+        notes="Spot only, no history. Use frankfurter where a time series is needed.",
+    ),
+    SourceSpec(
+        "worldbank_countries", "World Bank Country Macro (217 countries)", Domain.GLOBAL,
+        "https://api.worldbank.org/v2/country",
+        "GDP growth, GDP per capita, inflation, unemployment, current account, "
+        "government debt and market-cap-to-GDP for 217 countries.",
+        Status.WORKING, "annual", "months to years", "CC-BY 4.0",
+        series=("GDP_GROWTH", "INFLATION", "MARKET_CAP_GDP"), last_verified="2026-09-18",
+        asset_classes=(AssetClass.MACRO,),
+        notes="The backbone of global coverage and genuinely redistributable. Annual "
+              "and heavily revised, so it is context for comparing economies, never "
+              "a timing signal.",
     ),
 
     # ------------------------------------------------------------ GLOBAL ----
