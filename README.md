@@ -239,6 +239,37 @@ vyuha council record
 
 ---
 
+## Web console
+
+A text-first interface: ask a question the way you would ask a chatbot, and the
+council answers with a calibrated probability, the evidence each member cited,
+and the disagreement between them.
+
+```bash
+./scripts/serve.sh                      # http://127.0.0.1:8601
+./scripts/tailscale-serve.sh tailnet    # permanent HTTPS URL on your tailnet
+./scripts/tailscale-serve.sh public     # or on the public internet
+```
+
+Three routes, chosen by a deliberately simple and inspectable classifier:
+
+| You ask | Route | What happens |
+|---|---|---|
+| "Will the Nifty close below 22,900 in 30 days?" | `council` | ten members, N rounds, pooled probability + dispersion |
+| "What is the repo rate?" | `data` | direct lookup from live sources — **no model involved, nothing inferred** |
+| "Stress test my book" | `risk` | the scenario engine |
+
+The console shows an **independence warning** when every member resolves to the
+same base model, because then their errors are correlated and the dispersion
+understates true uncertainty. It is the kind of thing a dashboard normally
+hides.
+
+See [docs/DEPLOY.md](docs/DEPLOY.md) — including the Tailscale footgun where
+`tailscale serve --set-path` on a Funnel-enabled port silently de-publishes
+every other site on that port.
+
+---
+
 ## On the precision target
 
 This project was specified to detect effects moving the market by **0.00001%**.
