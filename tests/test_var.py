@@ -4,7 +4,12 @@ import pytest
 
 from vyuha.backtest.var_tests import backtest_var, christoffersen_independence, kupiec_pof
 from vyuha.risk.var import (
-    fit_garch11, var_ensemble, var_evt, var_filtered_historical, var_historical, var_parametric,
+    fit_garch11,
+    var_ensemble,
+    var_evt,
+    var_filtered_historical,
+    var_historical,
+    var_parametric,
 )
 
 

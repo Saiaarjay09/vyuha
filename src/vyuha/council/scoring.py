@@ -21,9 +21,9 @@ from __future__ import annotations
 import datetime as dt
 import json
 import math
-from dataclasses import dataclass, field
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence
 
 import numpy as np
 import pandas as pd
@@ -84,10 +84,10 @@ def crps_from_quantiles(
 def interval_coverage(
     quantile_values: dict[str, float], actual: float, lo: float = 0.05, hi: float = 0.95
 ) -> bool | None:
-    l, h = quantile_values.get(str(lo)), quantile_values.get(str(hi))
-    if l is None or h is None:
+    low, high = quantile_values.get(str(lo)), quantile_values.get(str(hi))
+    if low is None or high is None:
         return None
-    return bool(l <= actual <= h)
+    return bool(low <= actual <= high)
 
 
 # ------------------------------------------------------------------ calibration
@@ -287,8 +287,16 @@ class TrackRecord:
             rec.skill_vs_base_rate = (
                 float(1 - rec.mean_brier / base_brier) if base_brier > 0 else float("nan")
             )
-            # Mean log-odds gap between what it said and what happened.
-            rec.bias_logit = float(np.mean([logit(p) - logit(clamp(float(y))) for p, y in zip(ps, ys)]))
+            # Calibration-in-the-large: how far the forecaster's average
+            # log-odds sits from the log-odds of what actually happened.
+            #
+            # The obvious formulation -- mean(logit(p) - logit(y)) -- is wrong,
+            # and wrong in a way that quietly poisons pooling. logit of a 0/1
+            # outcome is +/-13.8 after clamping, so that average is dominated
+            # by the clamp constant and the base rate rather than by the
+            # forecaster, and a perfectly calibrated member picks up a large
+            # spurious bias whenever the base rate is not 0.5.
+            rec.bias_logit = float(np.mean([logit(p) for p in ps]) - logit(base))
         return rec
 
     def all_scores(self, half_life: float | None = None) -> pd.DataFrame:
@@ -330,8 +338,8 @@ class TrackRecord:
 
         raw = {}
         for m in members:
-            l = losses.get(m, default)
-            raw[m] = math.exp(-eta * (l - lo) / span)
+            loss = losses.get(m, default)
+            raw[m] = math.exp(-eta * (loss - lo) / span)
 
         total = sum(raw.values())
         w = {m: v / total for m, v in raw.items()}

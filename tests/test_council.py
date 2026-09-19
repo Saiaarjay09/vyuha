@@ -4,16 +4,26 @@ import numpy as np
 import pytest
 
 from vyuha.council.aggregate import (
-    PoolConfig, aggregate, directional_agreement, dispersion_categorical,
-    effective_independence, pool_binary, pool_categorical, pool_quantiles,
+    PoolConfig,
+    aggregate,
+    directional_agreement,
+    effective_independence,
+    pool_binary,
+    pool_categorical,
+    pool_quantiles,
 )
 from vyuha.council.evidence import EvidencePacket
 from vyuha.council.personas import PERSONAS, select
 from vyuha.council.providers import EchoProvider, extract_json
 from vyuha.council.schema import EvidenceRef, Forecast, Question, QuestionKind
 from vyuha.council.scoring import (
-    TrackRecord, brier_score, crps_from_quantiles, expected_calibration_error,
-    log_score, murphy_decomposition, pinball_loss,
+    TrackRecord,
+    brier_score,
+    crps_from_quantiles,
+    expected_calibration_error,
+    log_score,
+    murphy_decomposition,
+    pinball_loss,
 )
 
 
@@ -98,7 +108,7 @@ def test_quantile_pool_stays_monotonic():
             {"0.05": 22000, "0.25": 23500, "0.5": 24200, "0.75": 25000, "0.95": 26000}]
     pooled, _ = pool_quantiles(sets, qs)
     vals = [pooled[str(q)] for q in qs]
-    assert all(b >= a for a, b in zip(vals, vals[1:]))
+    assert all(b >= a for a, b in zip(vals, vals[1:], strict=False))
     assert 24200 <= pooled["0.5"] <= 24800
 
 

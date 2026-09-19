@@ -26,7 +26,8 @@ Sources, all free and all verified 2026-09-18:
 from __future__ import annotations
 
 import datetime as dt
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import pandas as pd
 

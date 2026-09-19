@@ -140,7 +140,7 @@ def pool_binary(
     lo = [logit(x) for x in p]
 
     if cfg.bias_correct and bias:
-        lo = [x - bias.get(m, 0.0) for x, m in zip(lo, members)]
+        lo = [x - bias.get(m, 0.0) for x, m in zip(lo, members, strict=True)]
 
     w = _weights_for(members, weights)
 
@@ -210,7 +210,7 @@ def pool_categorical(
         pooled = pooled / pooled.sum()
 
     return (
-        {o: float(v) for o, v in zip(outcomes, pooled)},
+        {o: float(v) for o, v in zip(outcomes, pooled, strict=True)},
         {
             "method": cfg.method,
             "dispersion_js": dispersion_categorical(arr.tolist()),
@@ -243,7 +243,7 @@ def pool_quantiles(
     for q in quantiles:
         key = str(q)
         vals, ws = [], []
-        for qs, wi in zip(quantile_sets, w):
+        for qs, wi in zip(quantile_sets, w, strict=True):
             v = qs.get(key)
             if v is not None and np.isfinite(v):
                 vals.append(float(v))
@@ -331,7 +331,7 @@ def aggregate(
 
 
 def _as_dict(members: list[str], w: np.ndarray) -> dict[str, float]:
-    return {m: float(x) for m, x in zip(members, w)}
+    return {m: float(x) for m, x in zip(members, w, strict=True)}
 
 
 def _fmt_info(info: dict) -> str:
@@ -345,7 +345,7 @@ def _name_dissent_binary(
     forecasts: list[Forecast], probs: list[float], pooled: float, threshold: float = 0.15
 ) -> list[str]:
     out = []
-    for f, p in zip(forecasts, probs):
+    for f, p in zip(forecasts, probs, strict=True):
         if abs(p - pooled) >= threshold:
             direction = "above" if p > pooled else "below"
             out.append(f"{f.member}: {p:.1%} ({direction} consensus) - {f.key_driver or f.reasoning[:160]}")
@@ -373,7 +373,7 @@ def fit_extremise_cap(
     panels: list[tuple[list[float], bool]],
     grid: tuple[float, ...] = (1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.25, 2.5, 3.0),
     config: PoolConfig | None = None,
-) -> tuple[float, "object"]:
+) -> tuple[float, object]:
     """Choose the extremisation cap that minimises Brier score on resolved history.
 
     ``panels`` is a list of (member probabilities, outcome) pairs. The returned

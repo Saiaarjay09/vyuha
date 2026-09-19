@@ -5,7 +5,9 @@ from scipy import stats
 
 from vyuha.benchmark.compare import capability_matrix, gap_report, score_against_market
 from vyuha.benchmark.implied import (
-    ImpliedDistribution, implied_cdf, implied_from_chain, real_world_adjust,
+    implied_cdf,
+    implied_from_chain,
+    real_world_adjust,
 )
 
 

@@ -1,12 +1,15 @@
-import datetime as dt
 
 import numpy as np
 import pandas as pd
 import pytest
 
 from vyuha.ingest.globalmarkets import (
-    FRED_COMMODITIES, FRED_GLOBAL, LBMA_FEEDS, WB_INDICATORS,
-    inr_return_decomposition, to_inr,
+    FRED_COMMODITIES,
+    FRED_GLOBAL,
+    LBMA_FEEDS,
+    WB_INDICATORS,
+    inr_return_decomposition,
+    to_inr,
 )
 
 

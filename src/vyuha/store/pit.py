@@ -21,9 +21,10 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-from dataclasses import asdict, dataclass, field
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 import duckdb
 import pandas as pd
@@ -256,7 +257,7 @@ class PITStore:
     def close(self) -> None:
         self.con.close()
 
-    def __enter__(self) -> "PITStore":
+    def __enter__(self) -> PITStore:
         return self
 
     def __exit__(self, *exc: object) -> None:

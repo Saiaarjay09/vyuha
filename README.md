@@ -278,6 +278,37 @@ every other site on that port.
 
 ---
 
+## How it learns
+
+Two things get called learning; only one improves accuracy.
+
+**Scoring** — resolve past forecasts, score them with proper rules, re-derive
+each member's weight and bias. The machinery existed but was inert until
+`vyuha/learn/` closed the loop. On 60 simulated questions the weights recover
+the true skill ordering (skilled member 0.950, permabear 0.029, coin-flipper
+0.020) and the permabear's over-statement is measured and subtracted.
+
+**Discovery** — finding new variables. This makes systems *worse* if unguarded:
+test 100 unrelated series at p<0.05 and ~5 look significant on noise alone. So
+candidates pass through `proposed → verified → validated → promoted`, with
+out-of-sample testing, a purge gap, and Benjamini-Hochberg FDR correction
+across the batch. On 61 candidates (60 noise, 1 real), four cleared a naive
+p<0.05 — chance predicts 3.1 — and **only the real one survived correction**.
+Promotion is always by human pull request.
+
+A daily GitHub Action runs the cycle at market open:
+
+```bash
+python scripts/daily_learn.py --all
+```
+
+Its first run verified seven previously-unwired India series on FRED, and
+rejected the one it most wanted (the 10-year G-sec yield) because the endpoint
+returned nothing — a dead URL is not a source.
+
+Full detail, including the timeline before this starts mattering:
+**[docs/LEARNING.md](docs/LEARNING.md)**.
+
 ## Can it beat Aladdin?
 
 Not at what Aladdin is for, and it should not try. Aladdin is portfolio

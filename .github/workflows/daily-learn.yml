@@ -1,0 +1,138 @@
+name: Daily learning cycle
+
+# NSE opens 09:15 IST = 03:45 UTC. We run a little after the open so the
+# previous session's data has settled.
+#
+# Two things to know about GitHub's scheduler, because they will bite you:
+#   1. Cron is best-effort. Runs are routinely delayed by 5-30 minutes under
+#      load, and occasionally skipped. Nothing here may assume it ran.
+#   2. Scheduled workflows are DISABLED automatically after 60 days with no
+#      repository activity. A repo that is only receiving these commits still
+#      counts as active, but if you stop merging, check it is still enabled.
+on:
+  schedule:
+    - cron: "50 3 * * 1-5"      # weekdays, 03:50 UTC / 09:20 IST
+  workflow_dispatch:
+    inputs:
+      stages:
+        description: "Stages to run"
+        required: false
+        default: "--all"
+        type: choice
+        options: ["--all", "--resolve --retune", "--discover --validate"]
+
+# Least privilege: enough to commit evidence and open a PR, nothing more.
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: daily-learn
+  cancel-in-progress: false
+
+jobs:
+  learn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Restore source snapshots
+        # Discovery works by diffing registries against yesterday's snapshot,
+        # so without a cache every run sees an empty baseline and reports the
+        # entire catalogue as "new". The cache is what makes a diff a diff.
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: vyuha-snapshots-${{ github.run_id }}
+          restore-keys: vyuha-snapshots-
+
+      - name: Run the learning cycle
+        id: learn
+        env:
+          VYUHA_DATA_GOV_IN_KEY: ${{ secrets.DATA_GOV_IN_KEY }}
+        # No Ollama on a hosted runner, so the LLM hypothesis channel is off.
+        # Resolution, retuning, registry discovery and validation need no model.
+        run: |
+          python scripts/daily_learn.py ${{ github.event.inputs.stages || '--all' }} \
+            2>&1 | tee /tmp/learn.log
+          echo "summary<<EOF" >> "$GITHUB_OUTPUT"
+          tail -40 /tmp/learn.log >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Detect validated candidates
+        id: check
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, pathlib
+          p = pathlib.Path("data/candidates.json")
+          rows = json.loads(p.read_text()) if p.exists() else []
+          new = [r for r in rows if r.get("state") == "validated"]
+          print(f"validated={len(new)}")
+          print("names=" + ", ".join(r["key"] for r in new[:10]))
+          PY
+
+      - name: Commit evidence
+        # Outcomes and scores are append-only facts, so they land on main
+        # directly. Catalogue changes do NOT -- those go through review below.
+        run: |
+          git config user.name  "vyuha-bot"
+          git config user.email "noreply@anthropic.com"
+          git add -A council_runs data/candidates.json data/learning_report.json \
+                     data/cache/.gitkeep 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "nothing changed"
+          else
+            git commit -m "chore(learn): daily cycle $(date -u +%Y-%m-%d)
+
+          Resolved outcomes, updated track record and candidate registry.
+          Automated; see data/learning_report.json."
+            git pull --rebase --autostash origin ${{ github.ref_name }} || true
+            git push
+          fi
+
+      - name: Open a review PR for validated candidates
+        if: steps.check.outputs.validated != 'validated=0' && steps.check.outputs.validated != '0'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: learn/validated-candidates
+          title: "Validated candidate variables for review"
+          commit-message: "feat(catalogue): propose validated candidate variables"
+          body: |
+            Candidates that survived out-of-sample testing with
+            Benjamini-Hochberg FDR correction.
+
+            **${{ steps.check.outputs.names }}**
+
+            Surviving FDR means a correlation persisted out of sample after
+            correcting for how many hypotheses were tested. It does **not**
+            mean the variable causes anything, and it does not mean adding it
+            will improve forecasts. Before merging, check:
+
+            - [ ] Is there a plausible mechanism, or is this a coincidence?
+            - [ ] Is the source licensed for the use you intend?
+            - [ ] What is its publication lag, and is that recorded?
+            - [ ] Does it survive if you extend the holdout by a year?
+
+            Nothing here is merged automatically, by design.
+          labels: automated, needs-review
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Vyuha daily learning cycle"
+            echo '```'
+            echo "${{ steps.learn.outputs.summary }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

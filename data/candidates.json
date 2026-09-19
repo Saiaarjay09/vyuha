@@ -1,0 +1,168 @@
+[
+  {
+    "key": "fred_indcpiallminmei",
+    "name": "India CPI (OECD via FRED)",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=INDCPIALLMINMEI",
+    "source": "fred_gap_probe",
+    "rationale": "Would close a known coverage gap: India CPI (OECD via FRED).",
+    "state": "verified",
+    "discovered_at": "2026-09-19T04:40:58.023644+00:00",
+    "verified_at": "2026-09-19T04:40:58.538317+00:00",
+    "validated_at": "",
+    "rejected_reason": "",
+    "asset_classes": [
+      "macro"
+    ],
+    "evidence": {
+      "n_obs": 819,
+      "first": "1957-01-01",
+      "last": "2025-03-01",
+      "note": "819 observations"
+    }
+  },
+  {
+    "key": "fred_indproindmismei",
+    "name": "India industrial production (OECD)",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=INDPROINDMISMEI",
+    "source": "fred_gap_probe",
+    "rationale": "Would close a known coverage gap: India industrial production (OECD).",
+    "state": "verified",
+    "discovered_at": "2026-09-19T04:40:58.538404+00:00",
+    "verified_at": "2026-09-19T04:40:59.491564+00:00",
+    "validated_at": "",
+    "rejected_reason": "",
+    "asset_classes": [
+      "macro"
+    ],
+    "evidence": {
+      "n_obs": 346,
+      "first": "1994-04-01",
+      "last": "2023-01-01",
+      "note": "346 observations"
+    }
+  },
+  {
+    "key": "fred_intdsrinm193n",
+    "name": "India discount rate",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=INTDSRINM193N",
+    "source": "fred_gap_probe",
+    "rationale": "Would close a known coverage gap: India discount rate.",
+    "state": "verified",
+    "discovered_at": "2026-09-19T04:41:05.231093+00:00",
+    "verified_at": "2026-09-19T04:41:06.828201+00:00",
+    "validated_at": "",
+    "rejected_reason": "",
+    "asset_classes": [
+      "bond"
+    ],
+    "evidence": {
+      "n_obs": 655,
+      "first": "1968-01-01",
+      "last": "2022-07-01",
+      "note": "655 observations"
+    }
+  },
+  {
+    "key": "fred_irltlt01inm156n",
+    "name": "India 10-year government bond yield",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01INM156N",
+    "source": "fred_gap_probe",
+    "rationale": "Would close a known coverage gap: India 10-year government bond yield.",
+    "state": "rejected",
+    "discovered_at": "2026-09-19T04:40:59.491612+00:00",
+    "verified_at": "",
+    "validated_at": "",
+    "rejected_reason": "RuntimeError: fetch failed for https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRLTLT01INM156N: Client error '404 Not Found' for ur",
+    "asset_classes": [
+      "bond"
+    ],
+    "evidence": {
+      "speculative": false,
+      "series_id": "IRLTLT01INM156N"
+    }
+  },
+  {
+    "key": "fred_mktgdpina646nwdb",
+    "name": "India GDP, current USD",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=MKTGDPINA646NWDB",
+    "source": "fred_gap_probe",
+    "rationale": "Would close a known coverage gap: India GDP, current USD.",
+    "state": "verified",
+    "discovered_at": "2026-09-19T04:41:09.874328+00:00",
+    "verified_at": "2026-09-19T04:41:10.708040+00:00",
+    "validated_at": "",
+    "rejected_reason": "",
+    "asset_classes": [
+      "macro"
+    ],
+    "evidence": {
+      "n_obs": 66,
+      "first": "1960-01-01",
+      "last": "2025-01-01",
+      "note": "66 observations"
+    }
+  },
+  {
+    "key": "fred_rbinbis",
+    "name": "India real broad effective exchange rate",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=RBINBIS",
+    "source": "fred_gap_probe",
+    "rationale": "Would close a known coverage gap: India real broad effective exchange rate.",
+    "state": "verified",
+    "discovered_at": "2026-09-19T04:41:08.810495+00:00",
+    "verified_at": "2026-09-19T04:41:09.874283+00:00",
+    "validated_at": "",
+    "rejected_reason": "",
+    "asset_classes": [
+      "currency"
+    ],
+    "evidence": {
+      "n_obs": 391,
+      "first": "1994-01-01",
+      "last": "2026-07-01",
+      "note": "391 observations"
+    }
+  },
+  {
+    "key": "fred_xtexva01inm667s",
+    "name": "India merchandise exports",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=XTEXVA01INM667S",
+    "source": "fred_gap_probe",
+    "rationale": "Would close a known coverage gap: India merchandise exports.",
+    "state": "verified",
+    "discovered_at": "2026-09-19T04:41:06.828246+00:00",
+    "verified_at": "2026-09-19T04:41:07.906451+00:00",
+    "validated_at": "",
+    "rejected_reason": "",
+    "asset_classes": [
+      "macro"
+    ],
+    "evidence": {
+      "n_obs": 438,
+      "first": "1990-01-01",
+      "last": "2026-06-01",
+      "note": "438 observations"
+    }
+  },
+  {
+    "key": "fred_xtimva01inm667s",
+    "name": "India merchandise imports",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=XTIMVA01INM667S",
+    "source": "fred_gap_probe",
+    "rationale": "Would close a known coverage gap: India merchandise imports.",
+    "state": "verified",
+    "discovered_at": "2026-09-19T04:41:07.906491+00:00",
+    "verified_at": "2026-09-19T04:41:08.810448+00:00",
+    "validated_at": "",
+    "rejected_reason": "",
+    "asset_classes": [
+      "macro"
+    ],
+    "evidence": {
+      "n_obs": 438,
+      "first": "1990-01-01",
+      "last": "2026-06-01",
+      "note": "438 observations"
+    }
+  }
+]

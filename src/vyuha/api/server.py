@@ -24,15 +24,13 @@ import datetime as dt
 import json
 import re
 import time
-import uuid
 from typing import Any
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from vyuha import __version__
-from vyuha.config import settings
 
 app = FastAPI(title="Vyuha", version=__version__, docs_url="/api/docs")
 
@@ -381,7 +379,7 @@ async def ask_stream(req: AskRequest) -> StreamingResponse:
                 break
             try:
                 kind, payload = await asyncio.wait_for(q.get(), timeout=0.4)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 yield ": keepalive\n\n"
                 continue
             yield f"event: {kind}\ndata: {json.dumps(payload, default=str)}\n\n"

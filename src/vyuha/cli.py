@@ -207,7 +207,12 @@ def council_ask(
 ) -> None:
     """Put a question to the council."""
     from vyuha.council import (
-        Council, CouncilConfig, EvidencePacket, Question, QuestionKind, default_provider,
+        Council,
+        CouncilConfig,
+        EvidencePacket,
+        Question,
+        QuestionKind,
+        default_provider,
     )
     from vyuha.council.schema import question_id_for
 
@@ -365,7 +370,8 @@ def benchmark(
 
     t = Table(show_header=True, header_style="bold",
               title=f"{symbol} @ {spot:,.1f} - market-implied, expiry {target}")
-    t.add_column("measure"); t.add_column("value", justify="right")
+    t.add_column("measure")
+    t.add_column("value", justify="right")
     t.add_row("median", f"{dist.median():,.0f}")
     t.add_row("90% range", f"{dist.quantile(0.05):,.0f} - {dist.quantile(0.95):,.0f}")
     t.add_row("strikes used", str(dist.n_strikes_used))
@@ -452,7 +458,10 @@ def world_inr(
     import pandas as pd
 
     from vyuha.ingest.globalmarkets import (
-        FRED_GLOBAL, commodity, global_index, inr_return_decomposition,
+        FRED_GLOBAL,
+        commodity,
+        global_index,
+        inr_return_decomposition,
     )
 
     with console.status(f"fetching {asset}..."):
@@ -472,7 +481,8 @@ def world_inr(
 
     t = Table(show_header=True, header_style="bold",
               title=f"{asset} for a rupee investor - {d['start']} to {d['end']}")
-    t.add_column("component"); t.add_column("return", justify="right")
+    t.add_column("component")
+    t.add_column("return", justify="right")
     t.add_row("the asset itself (local currency)", f"{d['local_return']:+.2%}")
     t.add_row("the rupee moving", f"{d['currency_return']:+.2%}")
     t.add_row("[bold]what you actually got, in INR[/]",
@@ -503,7 +513,8 @@ def world_country(
             raise typer.Exit(1) from exc
     t = Table(show_header=True, header_style="bold",
               title=f"{iso3.upper()} - {indicator.replace('_', ' ')}")
-    t.add_column("year"); t.add_column("value", justify="right")
+    t.add_column("year")
+    t.add_column("value", justify="right")
     for _, r in df.tail(last).iterrows():
         t.add_row(str(r["date"].year), f"{r['value']:,.2f}")
     console.print(t)

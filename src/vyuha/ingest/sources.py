@@ -14,7 +14,6 @@ from typing import Any
 
 import pandas as pd
 
-from vyuha.config import settings
 from vyuha.ingest.base import NSESession, fetch
 
 # --------------------------------------------------------------------- equity

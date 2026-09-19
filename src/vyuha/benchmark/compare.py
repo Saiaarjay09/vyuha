@@ -20,9 +20,9 @@ much harder to fake.
 
 from __future__ import annotations
 
-import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -73,11 +73,11 @@ def score_against_market(
         raise ValueError("no resolved questions to score")
 
     base = float(y.mean())
-    vb = float(np.mean([brier_score(p, o) for p, o in zip(v, y)]))
-    mb = float(np.mean([brier_score(p, o) for p, o in zip(m, y)]))
+    vb = float(np.mean([brier_score(p, o) for p, o in zip(v, y, strict=True)]))
+    mb = float(np.mean([brier_score(p, o) for p, o in zip(m, y, strict=True)]))
     bb = float(np.mean([brier_score(base, o) for o in y]))
-    vl = float(np.mean([log_score(p, o) for p, o in zip(v, y)]))
-    ml = float(np.mean([log_score(p, o) for p, o in zip(m, y)]))
+    vl = float(np.mean([log_score(p, o) for p, o in zip(v, y, strict=True)]))
+    ml = float(np.mean([log_score(p, o) for p, o in zip(m, y, strict=True)]))
 
     skill_m = 1 - vb / mb if mb > 0 else float("nan")
     skill_b = 1 - vb / bb if bb > 0 else float("nan")

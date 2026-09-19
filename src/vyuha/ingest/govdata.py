@@ -26,8 +26,9 @@ https://data.gov.in/help/how-use-datasets-apis and set ``VYUHA_DATA_GOV_IN_KEY``
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 import pandas as pd
 

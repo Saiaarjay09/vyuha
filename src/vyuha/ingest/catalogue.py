@@ -608,7 +608,7 @@ def all_series() -> dict[str, str]:
     return out
 
 
-def by_asset_class(ac: "AssetClass | str") -> list[SourceSpec]:
+def by_asset_class(ac: AssetClass | str) -> list[SourceSpec]:
     a = AssetClass(ac) if isinstance(ac, str) else ac
     return [s for s in CATALOGUE if a in s.asset_classes]
 

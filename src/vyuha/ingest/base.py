@@ -207,7 +207,7 @@ class NSESession:
     def close(self) -> None:
         self.client.close()
 
-    def __enter__(self) -> "NSESession":
+    def __enter__(self) -> NSESession:
         return self
 
     def __exit__(self, *exc: object) -> None:

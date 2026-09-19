@@ -12,7 +12,6 @@ import datetime as dt
 import hashlib
 import json
 from enum import Enum
-from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -40,7 +39,7 @@ class Question(BaseModel):
     tags: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def _check(self) -> "Question":
+    def _check(self) -> Question:
         if self.kind is QuestionKind.CATEGORICAL and not self.outcomes:
             raise ValueError("categorical questions need outcomes")
         if self.kind is QuestionKind.CATEGORICAL and len(set(self.outcomes or [])) < 2:
@@ -90,7 +89,7 @@ class Forecast(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def _normalise_categorical(self) -> "Forecast":
+    def _normalise_categorical(self) -> Forecast:
         if self.distribution:
             total = sum(self.distribution.values())
             if total <= 0:
@@ -100,7 +99,7 @@ class Forecast(BaseModel):
         if self.quantile_values:
             items = sorted((float(k), v) for k, v in self.quantile_values.items())
             vals = [v for _, v in items]
-            if any(b < a for a, b in zip(vals, vals[1:])):
+            if any(b < a for a, b in zip(vals, vals[1:], strict=False)):
                 raise ValueError(f"quantiles must be non-decreasing, got {vals}")
         return self
 

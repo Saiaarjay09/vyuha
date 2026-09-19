@@ -3,7 +3,11 @@ import pandas as pd
 import pytest
 
 from vyuha.risk.covariance import (
-    CovarianceEstimate, ewma_cov, ledoit_wolf_cov, nearest_psd, sample_cov, shrunk_ewma_cov,
+    ewma_cov,
+    ledoit_wolf_cov,
+    nearest_psd,
+    sample_cov,
+    shrunk_ewma_cov,
 )
 
 
