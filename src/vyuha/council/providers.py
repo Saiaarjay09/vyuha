@@ -270,6 +270,62 @@ def extract_json(text: str) -> tuple[dict | None, str | None]:
     return None, f"no parseable JSON object ({errors[0] if errors else 'unknown'})"
 
 
+#: Hosted endpoints that serve OPEN-WEIGHT models (Llama, Qwen, Gemma, Mixtral)
+#: on a free tier. Using one keeps the "open models only" property while
+#: removing the requirement that a particular machine be awake -- which is what
+#: makes cloud deployment possible at all, since a free dyno has nowhere near
+#: the memory to run a local model.
+HOSTED_PRESETS: dict[str, str] = {
+    "groq": "https://api.groq.com/openai/v1",
+    "openrouter": "https://openrouter.ai/api/v1",
+    "together": "https://api.together.xyz/v1",
+    "cerebras": "https://api.cerebras.ai/v1",
+    "deepinfra": "https://api.deepinfra.com/v1/openai",
+}
+
+
+def resolve_base_url(value: str) -> str:
+    """Accept either a preset name or a full URL."""
+    v = (value or "").strip()
+    return HOSTED_PRESETS.get(v.lower(), v)
+
+
 def default_provider() -> Provider:
-    p = OllamaProvider()
-    return p if p.available_models() else EchoProvider()
+    """Pick an inference backend from configuration and what is reachable.
+
+    Order of preference, and why:
+
+      explicit config   if VYUHA_LLM_PROVIDER says something, obey it
+      local Ollama      free, private, and the positions never leave the machine
+      hosted endpoint   needed the moment the app runs anywhere but your desk
+      echo              a deterministic stub, so data and risk routes keep
+                        working and the council degrades honestly instead of
+                        the whole app failing to start
+
+    The last one matters for deployment: a cloud instance with no model should
+    still serve live figures and stress tests rather than 500.
+    """
+    mode = (settings.llm_provider or "auto").lower()
+
+    if mode == "echo":
+        return EchoProvider()
+
+    if mode in ("hosted", "openai", "remote") or (
+        mode == "auto" and settings.llm_base_url and not settings.ollama_host
+    ):
+        base = resolve_base_url(settings.llm_base_url)
+        if base:
+            return OpenAICompatible(base, settings.llm_api_key or "not-needed")
+
+    if mode in ("auto", "ollama"):
+        local = OllamaProvider()
+        if local.available_models():
+            return local
+        if mode == "ollama":
+            return local  # asked for it explicitly; let it fail loudly
+
+    base = resolve_base_url(settings.llm_base_url)
+    if base and settings.llm_api_key:
+        return OpenAICompatible(base, settings.llm_api_key)
+
+    return EchoProvider()

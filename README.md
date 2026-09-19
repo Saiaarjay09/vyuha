@@ -245,6 +245,21 @@ vyuha council record
 
 ---
 
+## Deploying it
+
+Runs anywhere Docker runs; `fly.toml` and `render.yaml` are included. Inference
+goes to any OpenAI-compatible endpoint serving open-weight models
+(`groq`, `openrouter`, `cerebras`, …), so a cloud instance needs no GPU and the
+models stay open. With none configured it degrades honestly: live figures and
+stress tests keep working and the council says it has no advisors rather than
+inventing a number. See [docs/DEPLOY.md](docs/DEPLOY.md).
+
+## Reading the code
+
+- **[VARIABLES.txt](VARIABLES.txt)** — every variable, and the mechanism by
+  which each one moves markets.
+- **[CODEBASE.txt](CODEBASE.txt)** — every file, every library, and why.
+
 ## Web console
 
 Live at **https://haven.taila6d3cb.ts.net/vyuha**. Written for someone who has

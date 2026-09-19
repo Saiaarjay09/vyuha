@@ -343,6 +343,14 @@ function renderRisk(d){
   return h+`</table></div></div><p class="foot">Based on what actually happened during each event.</p></article>`;
 }
 
+function renderNoModel(d){
+  return `<article><p class="verdict" style="font-size:30px;color:var(--mid)">No advisors available</p>
+    <p class="standfirst">${esc(d.message)}</p>
+    <div class="sections"><div class="sec"><h3><span class="n">01</span> How to enable them</h3>`+
+    (d.how_to_fix||[]).map(x=>`<p class="sub">${esc(x)}</p>`).join('')+
+    `</div></div><p class="foot">Live figures and stress tests work without a model.</p></article>`;
+}
+
 function renderNoData(d){
   return `<article><p class="verdict" style="font-size:30px;color:var(--mid)">Not enough data</p>
     <p class="standfirst">${esc(d.message)}</p>
@@ -354,7 +362,9 @@ function renderNoData(d){
 
 async function health(){
   try{const d=await(await fetch(api('/api/health'))).json();
-    statEl.textContent=d.distinct_model_families<2?'1 model':`${d.models.length} models`;
+    statEl.textContent = !d.council_available ? 'data only'
+      : d.distinct_model_families<2 ? '1 model'
+      : `${d.models.length} models`;
   }catch(e){statEl.textContent='offline';}
 }
 
@@ -422,7 +432,8 @@ async function submit(text){
           pending.remove();
           add(d.route==='council'?renderCouncil(d)
              :d.route==='data'?renderData(d)
-             :d.route==='no_data'?renderNoData(d):renderRisk(d));
+             :d.route==='no_data'?renderNoData(d)
+             :d.route==='no_model'?renderNoModel(d):renderRisk(d));
         }
       }
     }

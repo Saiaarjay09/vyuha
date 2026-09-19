@@ -1,0 +1,355 @@
+================================================================================
+  VYUHA - HOW THE CODE WORKS
+  Every file, every library, and why each choice was made
+================================================================================
+
+  9,653 lines of Python across 41 modules, plus 1,573 lines of tests
+  (160 tests).
+  Python 3.11+. Apache 2.0.
+
+
+================================================================================
+  THE SHAPE OF IT
+================================================================================
+
+  free data sources          46 catalogued, 13 domains
+        |
+        v
+  ingest/     fetch, cache, throttle, verify
+        |
+        v
+  store/      BITEMPORAL storage - what was knowable, and when
+        |
+        +--------------------------+
+        v                          v
+  risk/                      council/
+  covariance, VaR,           10 biased LLM advisors, scored
+  factors, stress,           and pooled
+  liquidity                        |
+        |                          v
+        v                    benchmark/  scored against the option market
+  backtest/                        |
+  is the VaR believable?           v
+                             learn/  resolve outcomes, retune, discover
+                                   |
+                                   v
+                             api/  FastAPI + one self-contained HTML page
+
+
+================================================================================
+  LIBRARIES, AND WHY EACH ONE
+================================================================================
+
+numpy, pandas        Array and table work. Everything numeric rests on these.
+scipy                Statistics: distributions, optimisation, hypothesis tests.
+                     Used for the GARCH fit, the Generalised Pareto tail fit,
+                     Spearman correlation and chi-squared VaR tests.
+scikit-learn         Only for Ledoit-Wolf and OAS covariance shrinkage. Those
+                     estimators are subtle enough to be worth taking from a
+                     well-tested library rather than reimplementing.
+statsmodels          Time-series utilities.
+duckdb               The bitemporal store. Chosen over SQLite because it is
+                     columnar and handles window functions over millions of
+                     observations quickly; chosen over Postgres because it is
+                     a single file with no server to run.
+pyarrow              Parquet, and DuckDB's interchange format.
+httpx                HTTP client. Preferred over requests for its timeout
+                     model and connection reuse, which matter when politely
+                     scraping rate-limited government endpoints.
+pydantic v2          Validates every council forecast. A model returning a
+                     probability of 1.4 or non-monotonic quantiles is rejected
+                     at the boundary rather than corrupting a pooled verdict.
+pydantic-settings    Config from environment variables, which is what makes
+                     the same image run locally and in a container.
+typer + rich         The CLI and its tables.
+fastapi + uvicorn    The web API. Async matters here because a council run
+                     holds a connection open for ~20 seconds while streaming.
+lxml, beautifulsoup4 Parsing RBI's HTML, which has no API.
+
+  NOT USED, deliberately:
+    arch             GARCH(1,1) is ~40 lines with scipy.optimize; not worth
+                     a dependency.
+    yfinance         Yahoo now hard-blocks this host (HTTP 429).
+    langchain        The council needs exact control over prompts, parsing and
+                     scoring. An abstraction layer would obscure the part that
+                     matters.
+    any paid data    The entire point is that it runs on free sources.
+
+
+================================================================================
+  FILE BY FILE
+================================================================================
+
+--------------------------------------------------------------------------------
+  config.py (69 lines)
+--------------------------------------------------------------------------------
+  One Settings object, every field overridable by a VYUHA_-prefixed
+  environment variable. Paths, HTTP behaviour, rate limits, council defaults,
+  and the LLM provider selection that lets the same code run against a local
+  Ollama or a hosted endpoint.
+
+--------------------------------------------------------------------------------
+  store/pit.py (317 lines)  -- the most important file in the repository
+--------------------------------------------------------------------------------
+  Bitemporal storage. Every fact carries TWO dates:
+
+      event_date     what the observation describes  ("CPI for March")
+      available_at   when it became publicly knowable ("12 April")
+
+  as_of(t) returns only the highest revision whose available_at <= t. A
+  backtest run "as of 1 April" therefore CANNOT see the March CPI print that
+  landed on the 12th, structurally rather than by discipline.
+
+  This is not academic. Indian CPI is published ~12 days late and revised
+  twice; IIP lands ~42 days late; GDP is restated for years. Nearly every
+  naive Indian backtest is wrong for exactly this reason. If you cannot say
+  when a number became public, it does not go in the store.
+
+  Also: revision_history() shows every print ever made for one observation,
+  and coverage() reports the mean publication lag per series.
+
+--------------------------------------------------------------------------------
+  ingest/  -- getting the data
+--------------------------------------------------------------------------------
+  base.py (214)        HTTP with disk cache, exponential backoff, and PER-HOST
+                       rate limits. Carries a hard-won detail: bot-detection
+                       policies actively CONFLICT. NSE refuses anything that
+                       does not look like a browser; FRED's CDN silently
+                       black-holes requests carrying a Chrome User-Agent. So
+                       fetch(browser_ua=...) lets each source choose. GDELT
+                       asks for one request per 5 seconds and says so in plain
+                       text instead of JSON when you exceed it.
+                       NSESession handles NSE's cookie warm-up dance.
+
+  catalogue.py (648)   The map of what Vyuha can see, as a DATA STRUCTURE
+                       rather than prose, so the CLI lists it and tests check
+                       it. 46 sources, each with status (working / fragile /
+                       blocked / planned), licence, publication lag, asset
+                       classes, and the date it was last verified live.
+                       Honesty is enforced: a test fails if anything claims
+                       WORKING without a verification date, or claims BLOCKED
+                       without saying why.
+
+  sources.py (376)     Fetchers for AMFI (14,374 mutual fund NAVs), FRED, the
+                       World Bank, GDELT, and NSE (indices, FII/DII flows,
+                       option chain). The AMFI parser is HEADER-DRIVEN, not
+                       positional, because AMFI once inserted two columns and
+                       a positional parser returned zero rows with no error.
+
+  rbi.py (135)         Scrapes the RBI homepage rates block: repo, SDF, MSF,
+                       bank rate, reverse repo, CRR, SLR and reference FX, in
+                       one fetch. The highest value per unit of parsing effort
+                       of anything the RBI publishes.
+
+  globalmarkets.py (346)  Commodities (LBMA gold and silver daily since 1968),
+                       world indices, FX, and 217 countries of macro. Contains
+                       to_inr() and inr_return_decomposition(), which split a
+                       foreign return into the asset move and the currency
+                       move. Conversion uses the CONTEMPORANEOUS rate for each
+                       observation - using today's rate across a ten-year
+                       series would silently rewrite a decade of returns.
+
+  govdata.py (147)     data.gov.in, ~288,000 resources. Its API accepts a `q`
+                       search parameter and SILENTLY IGNORES IT, so
+                       search_catalogue() pages the catalogue and indexes
+                       locally instead.
+
+  power.py (62)        Electricity demand. Grid-India's report host no longer
+                       resolves, so grid_india_available() probes live rather
+                       than hardcoding "broken" - the module resumes working
+                       by itself if the host returns.
+
+--------------------------------------------------------------------------------
+  risk/  -- the quantitative core
+--------------------------------------------------------------------------------
+  returns.py (98)      Return construction, corporate-action adjustment, and
+                       stale-price detection. Unadjusted bhavcopy prices turn
+                       every stock split into a fake -50% day.
+
+  covariance.py (232)  EWMA, Ledoit-Wolf, OAS, and a shrunk-EWMA default.
+                       Every estimate is projected onto the positive
+                       semi-definite cone, and reports how much shrinkage was
+                       applied - so you can see how much of the answer is data
+                       and how much is prior. On the Nifty 500 the sample
+                       covariance estimates 125,250 parameters from 252,000
+                       numbers; without shrinkage an optimiser levers straight
+                       into the noise.
+
+  var.py (385)         Five estimators: historical, parametric with
+                       Cornish-Fisher, GARCH-filtered historical simulation,
+                       and EVT peaks-over-threshold. var_ensemble() runs them
+                       all and reports the SPREAD, because when they disagree
+                       by 2x the honest answer is the range.
+                       Cornish-Fisher is checked for monotonicity and REJECTED
+                       outside its valid domain: on t(3) data the unguarded
+                       expansion overshoots the empirical quantile by 29%,
+                       worse than the plain Gaussian it was meant to improve.
+
+  factors.py (277)     India factor model: market, size, value, momentum,
+                       quality, low-vol, liquidity, and a GOVERNANCE factor
+                       built on promoter pledging, which has no clean US
+                       analogue but has preceded many Indian mid-cap failures.
+                       Reports pct_specific - the share of risk it CANNOT
+                       attribute.
+
+  stress.py (279)      Nine scenarios from India's own record: GFC, taper
+                       tantrum, demonetisation, IL&FS, COVID, a governance
+                       shock, plus oil / monsoon / FPI-exodus hypotheticals.
+                       unmodelled_exposures() names the risk axes your book
+                       has no data for, instead of treating them as zero - a
+                       stress test that silently reads missing duration as
+                       zero duration will report a bond portfolio as immune to
+                       rate moves.
+
+  liquidity.py (129)   Amihud illiquidity, days-to-liquidate, CIRCUIT-LIMIT
+                       risk and concentration. A stock locked at its band
+                       cannot be sold at any price.
+
+--------------------------------------------------------------------------------
+  council/  -- the bias-diverse forecasting panel
+--------------------------------------------------------------------------------
+  personas.py (295)    Ten advisors with deliberately OPPOSED priors: hawk vs
+                       dove, value bear vs momentum bull, plus flows, quant,
+                       policy, behavioural, global macro, and a red team whose
+                       only job is to attack the emerging consensus. Each is
+                       assigned a different open-weight model family on
+                       purpose: running all ten on one base model gives
+                       correlated errors no prompting can remove.
+
+  schema.py (173)      Pydantic types. Rejects out-of-range probabilities and
+                       non-monotonic quantiles at the boundary.
+
+  evidence.py (180)    The evidence packet: numbered, hashed, point-in-time
+                       facts. Members never touch the database and never
+                       browse - they get a frozen packet and must cite items
+                       by ID. A citation to an ID that was never issued is
+                       FLAGGED, which is how fabricated numbers get caught.
+
+  providers.py (331)   Ollama, any OpenAI-compatible endpoint, and a
+                       deterministic Echo stub for tests. Includes JSON rescue
+                       for the mistakes small models actually make (trailing
+                       commas, Python True/False, fenced blocks).
+
+  aggregate.py (401)   Opinion pooling, and the subtlest file here. Averaging
+                       forecasts is wrong: a mean of well-calibrated but
+                       differently-informed forecasters is systematically
+                       UNDER-confident, because averaging preserves every
+                       individual hedge. So: bias-correct in log-odds, pool
+                       with track-record weights, then extremise.
+                       Extremisation is gated on DIRECTIONAL AGREEMENT, not
+                       raw spread. An early version treated dispersion alone
+                       as evidence of independence and pushed a panel
+                       deadlocked at 5%/95% to 84.6% confidence - manufacturing
+                       certainty from a disagreement.
+
+  scoring.py (369)     Brier, log score, CRPS via pinball loss, calibration
+                       curves, and the Murphy decomposition (reliability -
+                       resolution + uncertainty), which separates a forecaster
+                       that is calibrated but uninformative from one that is
+                       informative but overconfident.
+
+  debate.py (462)      Orchestration. Round 0 is answered INDEPENDENTLY - no
+                       member sees another's view - because anchoring is what
+                       collapses a multi-agent system into one forecaster with
+                       extra steps. Later rounds show an anonymised
+                       distribution plus the strongest counterargument.
+                       Speed: the concise output spec made this 3.9x faster
+                       (24.5s -> 6.3s over six members) with the same parse
+                       rate and MORE citations per member.
+
+--------------------------------------------------------------------------------
+  benchmark/  -- how we know whether any of it works
+--------------------------------------------------------------------------------
+  implied.py (330)     Recovers the market's own probability distribution from
+                       the NSE option chain via Breeden-Litzenberger. Uses
+                       out-of-the-money options only, splicing OTM puts
+                       converted by put-call parity onto OTM calls, because
+                       in-the-money NSE options barely trade and their stale
+                       quotes destroy the derivative.
+                       prob_touch_below() gives the BARRIER probability: the
+                       chain prices where the index finishes, but the council
+                       is asked "on any session", and conflating the two
+                       understates a 30-day barrier question by roughly half.
+
+  compare.py (212)     Scores Vyuha against the option market, the base rate,
+                       and its own calibration. Refuses to declare a winner
+                       below 20 resolved questions.
+
+--------------------------------------------------------------------------------
+  learn/  -- getting better over time
+--------------------------------------------------------------------------------
+  resolve.py (345)     THE LOOP THAT MATTERS. Finds runs past their resolution
+                       date, resolves them, scores every member, and re-derives
+                       weights and bias corrections. All the scoring machinery
+                       was inert until this existed. Parameters are withheld
+                       below 25/30/50 resolved questions, because re-fitting
+                       daily on a handful of outcomes chases noise.
+
+  validate.py (242)    The statistical gate. Out-of-sample only, with a purge
+                       gap (macro series are autocorrelated and adjacent
+                       observations leak) and Benjamini-Hochberg FDR
+                       correction across the batch. On 61 candidates (60
+                       noise, 1 real), four cleared a naive p<0.05 - chance
+                       predicts 3.1 - and only the real one survived.
+
+  discover.py (374)    Finds candidates by diffing official registries. Every
+                       one must pass verification (the endpoint has to return
+                       parseable data) before it is anything but a suggestion.
+
+  registry.py (116)    Candidate lifecycle: proposed -> verified -> validated
+                       -> promoted. Promotion is by human pull request only.
+
+--------------------------------------------------------------------------------
+  api/  -- the website
+--------------------------------------------------------------------------------
+  server.py (592)      FastAPI. Routes a question to council / data lookup /
+                       risk / refusal. A data lookup involves NO model at all.
+                       Questions about asset classes with no source are
+                       refused BEFORE any model sees them - a language model
+                       will happily answer a Mumbai property question from
+                       memory with confident, sourceless numbers.
+                       Streams progress over server-sent events.
+
+  ui.py (456)          The entire front end as one self-contained HTML string.
+                       No build step, no framework, no CDN except the font -
+                       which matters for a risk tool, because you should be
+                       able to audit the thing showing you numbers. Answers
+                       open with one prose paragraph, then numbered sections.
+
+--------------------------------------------------------------------------------
+  cli.py (581)
+--------------------------------------------------------------------------------
+  vyuha doctor | sources | coverage | council | risk | world | benchmark
+
+--------------------------------------------------------------------------------
+  tests/ (1,573 lines, 160 tests)
+--------------------------------------------------------------------------------
+  Entirely OFFLINE by design: no test depends on a live endpoint, because a
+  source going down should fail ingestion, not the build. Several tests exist
+  because they caught real bugs:
+
+    - a polarised panel being extremised to false confidence
+    - Cornish-Fisher overshooting on heavy tails
+    - "Will Brent go above 140?" being refused as a HOUSING question, because
+      the real-estate keyword "rent" matched inside "B-rent"
+    - a degenerate option chain producing a step-function CDF that passed
+      every other sanity check
+    - bias correction dominated by the logit clamp constant rather than by
+      the forecaster
+
+
+================================================================================
+  RUNNING IT
+================================================================================
+
+  pip install -e ".[api,dev]"
+  vyuha doctor                 # check the environment
+  ./scripts/serve.sh           # http://127.0.0.1:8601
+  pytest -q                    # 160 tests, no network needed
+  ruff check src tests
+
+  For the council: install Ollama and pull several DIFFERENT model families -
+  llama3.1:8b, qwen2.5, gemma2, phi4. Same-family advisors make correlated
+  errors, and the UI warns when that is the case.
+
+  Deployed: Docker image, with render.yaml and fly.toml. See docs/DEPLOY.md.

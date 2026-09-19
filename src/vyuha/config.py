@@ -38,7 +38,13 @@ class Settings(BaseSettings):
     data_gov_in_key: str | None = None
     fred_api_key: str | None = None
 
-    # --- council ---
+    # --- council / inference ---
+    # "auto" prefers a local Ollama and falls back to a hosted endpoint, which
+    # is what lets the same code run on a laptop and on a 512MB cloud dyno.
+    llm_provider: str = "auto"           # auto | ollama | hosted | echo
+    llm_base_url: str = ""               # any OpenAI-compatible endpoint
+    llm_api_key: str = ""                # set via env/secret, never committed
+    llm_model: str = ""                  # override model selection entirely
     ollama_host: str = "http://localhost:11434"
     council_log_dir: Path = REPO_ROOT / "council_runs"
     council_rounds: int = 2

@@ -295,14 +295,23 @@ def build_evidence(as_of: dt.datetime | None = None, include_global: bool = Fals
 
 @app.get("/api/health")
 def health() -> dict:
-    from vyuha.council.providers import OllamaProvider
+    from vyuha.council.providers import EchoProvider, default_provider
 
-    models = OllamaProvider().available_models()
+    provider = default_provider()
+    try:
+        models = provider.available_models()
+    except Exception:  # noqa: BLE001
+        models = []
+    usable = not isinstance(provider, EchoProvider)
     return {
         "status": "ok", "version": __version__,
-        "models": models,
-        "distinct_model_families": len({m.split(":")[0] for m in models}),
-        "ollama": bool(models),
+        "provider": provider.name,
+        "models": models[:12],
+        "distinct_model_families": len({m.split(":")[0].split("/")[-1] for m in models}),
+        "council_available": usable,
+        # Data and risk answers never need a model, so the app is useful even
+        # when inference is unavailable.
+        "data_routes_available": True,
     }
 
 
@@ -467,7 +476,27 @@ def _answer_risk(question: str, emit=None) -> dict:
 
 def _answer_council(req: AskRequest, emit=None) -> dict:
     from vyuha.council import Council, CouncilConfig, Question, QuestionKind, default_provider
+    from vyuha.council.providers import EchoProvider
     from vyuha.council.schema import question_id_for
+
+    provider = default_provider()
+    if isinstance(provider, EchoProvider):
+        # A stub provider returns a fixed 0.5, which would render as a real
+        # forecast. Saying there is no model is the only honest option; the
+        # data and risk routes keep working regardless.
+        return {
+            "route": "no_model",
+            "question": req.question,
+            "message": (
+                "No language model is available, so the council cannot meet. "
+                "Live figures and stress tests still work."
+            ),
+            "how_to_fix": [
+                "Locally: install Ollama and run `ollama pull llama3.1:8b`.",
+                "Hosted: set VYUHA_LLM_BASE_URL (e.g. 'groq') and "
+                "VYUHA_LLM_API_KEY in your deployment's environment.",
+            ],
+        }
 
     if emit:
         emit("status", {"stage": "assembling point-in-time evidence"})
@@ -488,7 +517,7 @@ def _answer_council(req: AskRequest, emit=None) -> dict:
     )
 
     council = Council(
-        provider=default_provider(),
+        provider=provider,
         personas=req.members,
         config=CouncilConfig(rounds=req.rounds),
     )

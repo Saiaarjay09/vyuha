@@ -1,0 +1,33 @@
+# Fly.io. Small always-on instances are cheap, and unlike Render's free tier
+# the app need not cold-start. Region bom = Mumbai, nearest to NSE and RBI.
+app = "vyuha"
+primary_region = "bom"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8601"
+  VYUHA_LLM_PROVIDER = "hosted"
+  VYUHA_LLM_BASE_URL = "groq"
+
+[http_service]
+  internal_port = 8601
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 20
+    soft_limit = 10
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# Secrets are set out of band and never committed:
+#   fly secrets set VYUHA_LLM_API_KEY=...
+#   fly secrets set VYUHA_DATA_GOV_IN_KEY=...

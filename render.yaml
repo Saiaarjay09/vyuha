@@ -1,0 +1,19 @@
+# Render blueprint. Free tier: 512MB RAM, and the instance SLEEPS after 15
+# minutes idle, so the first request after a pause takes ~30-60s to wake.
+# The URL itself is permanent either way, which is the point.
+services:
+  - type: web
+    name: vyuha
+    runtime: docker
+    plan: free
+    region: singapore          # closest to Indian data sources
+    healthCheckPath: /api/health
+    envVars:
+      - key: VYUHA_LLM_PROVIDER
+        value: hosted
+      - key: VYUHA_LLM_BASE_URL
+        value: groq            # or openrouter / cerebras / together
+      - key: VYUHA_LLM_API_KEY
+        sync: false            # set in the Render dashboard; never in git
+      - key: VYUHA_DATA_GOV_IN_KEY
+        sync: false

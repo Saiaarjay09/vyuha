@@ -1,0 +1,368 @@
+================================================================================
+  VYUHA - EVERY VARIABLE, AND HOW EACH ONE MOVES MARKETS
+================================================================================
+
+  46 catalogued sources, 108 declared series, 13 domains.
+  Lines marked [LIVE] have a fetcher verified against the live source.
+  Lines marked [PLANNED] are catalogued but not yet wired.
+  Lines marked [BLOCKED] were usable and are not any more.
+
+  Generated against the catalogue in src/vyuha/ingest/catalogue.py. Run
+  `vyuha sources list` for the current machine-readable state.
+
+  A NOTE ON "CAUSES". Everything below describes a transmission mechanism -
+  a plausible, usually well-documented path from variable to price. A
+  mechanism is not proof that the variable predicts returns today. Vyuha
+  tests candidate variables out of sample with false-discovery-rate control
+  before trusting any of them (docs/LEARNING.md). Read these as hypotheses
+  with good priors, not as established effects.
+
+
+================================================================================
+  1. POLICY RATES AND MONEY  [LIVE]
+================================================================================
+
+REPO_RATE - the RBI's policy rate
+  The single most important number in Indian finance. It sets the price of
+  overnight money, which propagates to everything:
+    -> bank lending rates move within weeks (most Indian loans are now
+       externally benchmarked to the repo, so transmission is fast)
+    -> the discount rate applied to future company earnings changes, so
+       equity valuations move inversely: higher repo, lower P/E multiples
+    -> the gap between Indian and US rates changes, which moves the rupee
+       and therefore foreign investor appetite
+    -> high-debt companies are hit hardest; a leveraged infrastructure firm
+       reprices far more than a cash-rich IT exporter
+  Direction: repo UP -> equities DOWN (especially rate-sensitive sectors:
+  banks, real estate, autos), bond prices DOWN, rupee UP.
+
+SDF_RATE / MSF_RATE - the floor and ceiling of the policy corridor
+  Together with the repo they define how far overnight rates can drift. A
+  narrowing corridor signals the RBI wants tighter control of liquidity.
+
+CRR - cash reserve ratio
+  The share of deposits banks must park with the RBI, earning nothing. A CRR
+  rise removes liquidity from the banking system directly and immediately -
+  faster-acting than a repo change, and it hits bank profitability, because
+  the impounded cash earns zero.
+  Direction: CRR UP -> bank stocks DOWN, short-term rates UP.
+
+SLR - statutory liquidity ratio
+  The share of deposits banks must hold in government securities. It creates
+  captive demand for G-secs, which is why Indian government borrowing costs
+  are lower than the fiscal position alone would imply. Changes alter that
+  captive demand and move the whole yield curve.
+
+BANK_RATE / REVERSE_REPO_RATE
+  Largely signalling instruments now, but a change is read as intent.
+
+
+================================================================================
+  2. INFLATION  [CPI: PLANNED via MOSPI, PARTIAL via FRED/OECD]
+================================================================================
+
+CPI_COMBINED_YOY - headline consumer inflation
+  The RBI targets 4% with a 2-6% tolerance band. Breaching 6% for three
+  consecutive quarters legally obliges the RBI to explain itself to
+  Parliament, which makes the band a hard behavioural constraint, not a
+  preference.
+  Chain: CPI UP -> RBI holds or hikes -> discount rate UP -> equity
+  multiples DOWN and bond prices DOWN.
+  PUBLICATION LAG ~12 DAYS and revised twice. This is the single clearest
+  reason Vyuha's store is bitemporal: on 5 April nobody knew March CPI.
+
+CPI_FOOD_YOY - food inflation
+  Food is ~46% of India's CPI basket, roughly double the weight in a
+  developed economy. This is why Indian monetary policy is hostage to the
+  monsoon in a way the Fed's is not. A bad harvest can force tightening into
+  an economic slowdown - the worst combination for equities.
+
+CPI_CORE_YOY - core inflation
+  Strips food and fuel. If core is contained while headline spikes, the RBI
+  can credibly call the spike transitory and hold. If core is rising too,
+  it cannot.
+
+WPI_YOY - wholesale prices
+  Leads CPI for manufactured goods and is a direct read on corporate input
+  costs. A widening WPI-CPI gap means companies are absorbing costs they
+  cannot pass on - margin compression is coming.
+
+
+================================================================================
+  3. GROWTH AND REAL ACTIVITY
+================================================================================
+
+IIP_YOY - industrial production  [PLANNED; PARTIAL via FRED/OECD]
+  ~42 DAY LAG and heavily revised, which makes it nearly useless for timing.
+  Vyuha's intended answer is to nowcast it from power demand and e-way bills,
+  both of which arrive weeks earlier.
+
+GDP_YOY  [PLANNED]
+  ~60 day lag and revised for years. Context only. Backtests MUST use the
+  first print, never the current value.
+
+POWER_DEMAND_MU - all-India electricity demand  [BLOCKED - host gone]
+  THE BEST HIGH-FREQUENCY ACTIVITY PROXY IN INDIA. Daily, barely revised,
+  and available roughly six weeks before the IIP print it anticipates.
+  Factories consume electricity before they report output.
+  Needs weather adjustment: a hot April raises demand through air
+  conditioning, not industry, and mistaking one for the other is the classic
+  error with this series.
+
+GST_COLLECTIONS / EWAY_BILLS  [PLANNED]
+  GST prints on the 1st for the prior month - among the fastest real-activity
+  reads available anywhere in India. E-way bills track goods physically
+  moving and lead the GST number itself.
+
+UPI_VOLUME / UPI_VALUE  [PLANNED]
+  Consumption and formalisation. Structurally trending upward for years, so
+  ONLY the deviation from trend carries information. The level is meaningless.
+
+AUTO_REGISTRATIONS / TWO_WHEELER_REG / TRACTOR_REG  [PLANNED]
+  Daily, granular, and hard to fake. Two-wheelers and tractors are the
+  standard rural demand proxy and lead reported auto-sector earnings by weeks.
+  Rural distress shows up here before it shows up in any official statistic.
+
+BANK_CREDIT_YOY  [PLANNED]
+  Credit growth is both a cause and a symptom. Accelerating credit signals
+  investment appetite; decelerating credit signals either weak demand or
+  banks refusing to lend, which are very different and worth distinguishing.
+
+
+================================================================================
+  4. EQUITY MARKET STATE  [LIVE]
+================================================================================
+
+NIFTY50_CLOSE / BANKNIFTY_CLOSE / NIFTY_MIDCAP_CLOSE
+  Price is information. The large/mid dispersion matters enormously in India:
+  in the IL&FS episode mid-caps fell roughly THREE TIMES as far as large
+  caps. Treating "Indian equity" as one exposure misses this entirely.
+
+INDIA_VIX - implied volatility
+  The market's own forecast of near-term turbulence, from Nifty option
+  prices. Spikes precede or accompany falls - it is the fear gauge. Very low
+  VIX indicates complacency, which is itself a risk factor: positioning gets
+  crowded when nobody expects trouble.
+
+EQ_DELIV_PCT - delivery percentage
+  What fraction of traded volume was actually delivered rather than
+  intraday-squared-off. High delivery on a rise suggests genuine
+  accumulation; low delivery suggests speculation that will unwind.
+
+NIFTY_PE / NIFTY_PB  [PLANNED]
+  Valuation. Poor at timing - expensive markets stay expensive for years -
+  but the best available predictor of 5-to-10-year returns. India persistently
+  trades at a premium to other emerging markets; whether that premium is
+  deserved is the single biggest open question about this market.
+
+
+================================================================================
+  5. DERIVATIVES AND POSITIONING  [LIVE]
+================================================================================
+
+PCR_NIFTY - put-call ratio
+  Open interest in puts divided by calls. High means heavy downside hedging
+  or bearish positioning. Read as a CONTRARIAN signal at extremes: when
+  everyone is hedged, the marginal seller is exhausted. Thresholds drift, so
+  z-score it against a trailing window rather than using a fixed level.
+
+NIFTY_IV_ATM - at-the-money implied volatility
+  With the full option chain this yields the market's entire probability
+  distribution for the index (see docs/VS_ALADDIN.md). It is the benchmark
+  Vyuha scores its own forecasts against.
+
+FII_INDEX_FUT_LS - foreign investor long-short ratio  [PLANNED]
+  Direct positioning data, published daily. Extremes have historically
+  preceded reversals better than any valuation measure.
+
+MAX_PAIN
+  The strike at which most options expire worthless. Weak evidence of price
+  pinning near expiry; included for completeness, not conviction.
+
+
+================================================================================
+  6. FLOWS - WHO IS ACTUALLY BUYING  [LIVE]
+================================================================================
+
+FII_NET_CASH - foreign institutional flows
+  The marginal price-setter in Indian large caps. Foreign investors trade on
+  global risk appetite, the dollar and relative valuations, so this is the
+  channel through which a Fed decision becomes an Indian equity move.
+  Direction: sustained FII selling -> large caps DOWN and rupee DOWN
+  simultaneously, because they sell the shares and then sell the rupees.
+
+DII_NET_CASH - domestic institutional flows
+  Increasingly the stabilising counterweight, funded by monthly SIP
+  contributions that arrive regardless of market level. Watch DIVERGENCE:
+  FII selling absorbed by DII buying is very different from both selling.
+
+SIP_INFLOW  [PLANNED]
+  Arguably the most important single number for Indian equities on a 1-3 year
+  view. A structural, price-insensitive monthly bid. The bull case for India
+  substantially rests on it continuing; a sharp fall would be a regime change.
+
+FPI_NET_DEBT  [PLANNED]
+  Foreign flows into bonds, driven by the India-US rate differential and
+  index inclusion. Often moves opposite to equity flows.
+
+
+================================================================================
+  7. THE RUPEE AND EXTERNAL BALANCE
+================================================================================
+
+USDINR  [LIVE]
+  Transmits in several directions at once, which is why it is hard:
+    -> IT and pharma exporters EARN more rupees when it weakens
+    -> importers and oil refiners PAY more
+    -> foreign investors' returns fall when it weakens, encouraging outflows
+    -> imported inflation rises, constraining the RBI
+  FOR AN INDIAN INVESTOR HOLDING FOREIGN ASSETS this is not a side issue: a
+  rupee investor's return is (1+asset return) x (1+rupee depreciation) - 1.
+  Measured over the year to 2026-09-17, the S&P 500 returned +15.2% in
+  dollars while the rupee weakened 8.9%, so an Indian holder received +25.4%
+  - THE CURRENCY WAS 35% OF THE RETURN.
+
+FX_RESERVES / CAD_PCT_GDP  [PLANNED]
+  India's vulnerability gauge. A wide current account deficit with thin
+  reserve cover is precisely the configuration that made India one of the
+  "Fragile Five" in 2013, when the rupee fell from 55 to 68 in four months.
+
+
+================================================================================
+  8. COMMODITIES  [LIVE]
+================================================================================
+
+BRENT / WTI - crude oil
+  INDIA'S SINGLE LARGEST EXTERNAL VULNERABILITY. Over 85% of crude is
+  imported, so an oil spike hits four channels simultaneously:
+    -> current account deficit widens -> rupee falls
+    -> fuel and transport costs rise -> CPI rises -> RBI constrained
+    -> the fuel subsidy bill rises -> fiscal deficit widens
+    -> input costs rise across manufacturing -> margins compress
+  Almost nothing else in this list transmits through four channels at once.
+  Winners: upstream producers (ONGC). Losers: refiners, airlines, paints,
+  tyres, anything with oil as a feedstock.
+
+GOLD_USD_OZ / SILVER_USD_OZ - LBMA London fix
+  Gold occupies a position in India it holds nowhere else: the largest private
+  household holding in the world, a savings vehicle, and a major import. Gold
+  imports widen the current account directly. Also a risk-off asset, so it
+  tends to rise when equities fall.
+  ALWAYS check the rupee price: gold can rise in dollars and fall in rupees.
+
+COPPER / ALUMINIUM - industrial metals
+  Global industrial demand proxies ("Dr Copper"). Monthly here, so context
+  rather than signal.
+
+WHEAT - grain prices
+  Food inflation, and therefore the policy rate, and therefore equities.
+
+
+================================================================================
+  9. GLOBAL CONDITIONS  [LIVE]
+================================================================================
+
+US10Y / US2Y / FED_FUNDS
+  The global risk-free rate. When US yields rise, capital leaves emerging
+  markets for safer dollar assets. The 2013 taper tantrum is the archetype:
+  a Fed signal, not an Indian event, took the rupee from 55 to 68.
+
+DXY / DOLLAR_INDEX
+  A strong dollar is systematically bad for emerging markets - it tightens
+  global financial conditions, raises the cost of dollar debt, and pushes
+  capital home.
+
+SP500 / NASDAQ / VIX
+  Global risk appetite. Indian equities are high-beta to it: correlations
+  that sit near 0.3 in calm markets go above 0.9 in a crisis, which is
+  exactly when diversification is supposed to help and does not.
+
+GDP_GROWTH / INFLATION / MARKET_CAP_GDP (217 countries)
+  Annual, heavily revised. Useful for comparing economies, useless for timing.
+
+
+================================================================================
+  10. WEATHER  [PLANNED] - the variable almost no risk system models
+================================================================================
+
+MONSOON_DEPARTURE_PCT / RESERVOIR_LEVEL
+  One of the longest genuinely causal chains in this market, and it starts
+  with rainfall:
+
+    rainfall -> kharif crop output -> food prices -> CPI (food is 46% of the
+    basket) -> RBI policy rate -> discount rate -> equity multiples
+
+  In parallel: rainfall -> rural incomes -> two-wheeler, tractor and FMCG
+  demand -> those companies' earnings.
+
+  A failed monsoon is a genuine macro event in India. Very few global risk
+  systems treat weather as a financial factor; here it is not optional.
+
+
+================================================================================
+  11. POLICY, GOVERNANCE AND SENTIMENT
+================================================================================
+
+SEBI / RBI CIRCULARS  [PLANNED]
+  Unstructured text, high impact. A margin-requirement or position-limit
+  change can reprice an entire market segment overnight. This is the category
+  no statistical model can anticipate - demonetisation removed 86% of
+  currency by value with no warning - and the main argument for keeping a
+  policy-literate reader in the loop.
+
+PROMOTER_PLEDGE_PCT  [PLANNED]
+  Shares pledged by controlling shareholders as loan collateral. Rising
+  pledging has preceded a large share of Indian mid-cap collapses: when the
+  price falls, lenders sell the collateral, which pushes the price down
+  further. A reflexive doom loop with no clean US analogue.
+
+NEWS_TONE_INDIA  [LIVE]
+  GDELT news tone. Noisy with a drifting baseline, so use the z-score against
+  a trailing window, never the raw level. Extremes are contrarian.
+
+
+================================================================================
+  12. MARKET MICROSTRUCTURE - India-specific risks
+================================================================================
+
+CIRCUIT LIMITS
+  A stock locked at its price band cannot be sold AT ANY PRICE. This is the
+  failure mode that turns a modelled loss into an unmodelled one, and it is
+  largely absent from risk systems designed for developed markets.
+
+AMIHUD ILLIQUIDITY / DAYS-TO-LIQUIDATE
+  Several thousand listed names, of which only a few hundred can absorb a
+  large position within a day. The risk number that matters in a crisis is
+  not "how far could this fall" but "how far could it fall before I can get
+  out".
+
+INDEX CONCENTRATION
+  A handful of corporate groups carry meaningful Nifty weight, so "diversified
+  across the Nifty" is less diversified than it sounds.
+
+
+================================================================================
+  WHAT IS NOT COVERED
+================================================================================
+
+  REAL ESTATE / HOUSING   zero working sources. Three candidates catalogued.
+                          Ask about property and Vyuha says it does not know.
+  INDIAN G-SEC CURVE      the biggest gap. The stress engine computes duration
+                          and convexity with no curve to apply them to.
+  COMPANY FUNDAMENTALS    no source wired, so the factor model runs on
+                          price-derived characteristics only.
+  PER-COUNTRY EQUITY      US covered deeply; other countries get macro only.
+
+
+================================================================================
+  THE LIMIT ON ALL OF THIS
+================================================================================
+
+  More variables does not mean more accuracy. Test 100 unrelated series
+  against Nifty returns and about five clear p<0.05 on noise alone. Vyuha
+  therefore requires out-of-sample survival with false-discovery-rate
+  correction before trusting any new variable (docs/LEARNING.md).
+
+  And no system resolves arbitrarily fine effects: NSE's tick size is 5
+  paise, which on a Rs 500 share is a 0.01% quantum. Claims of finer
+  resolution are false (docs/PRECISION.md).
