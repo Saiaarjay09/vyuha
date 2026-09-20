@@ -1,3 +1,5 @@
+import pathlib
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -9,6 +11,12 @@ from vyuha.benchmark.implied import (
     implied_from_chain,
     real_world_adjust,
 )
+
+#: Fixed "today" for every chain test. The synthetic chains below carry a
+#: hard-coded expiry, so without pinning this the time to expiry shrinks by a
+#: day with each passing day and the tests eventually fail for no reason.
+TODAY = __import__("datetime").date(2026, 9, 19)
+EXPIRY = "19-Oct-2026"
 
 
 def synthetic_chain(spot=23000.0, vol=0.15, t=30 / 365, r=0.0525, n=41):
@@ -22,7 +30,7 @@ def synthetic_chain(spot=23000.0, vol=0.15, t=30 / 365, r=0.0525, n=41):
         call = spot * stats.norm.cdf(d1) - k * np.exp(-r * t) * stats.norm.cdf(d2)
         put = call - spot + k * np.exp(-r * t)
         for side, px in (("CE", call), ("PE", put)):
-            rows.append({"strike": float(k), "expiry": "19-Oct-2026", "side": side,
+            rows.append({"strike": float(k), "expiry": EXPIRY, "side": side,
                          "oi": 5000, "ltp": max(px, 0.05),
                          "bid": max(px * 0.99, 0.05), "ask": max(px * 1.01, 0.05),
                          "iv": vol * 100, "volume": 1000})
@@ -31,13 +39,24 @@ def synthetic_chain(spot=23000.0, vol=0.15, t=30 / 365, r=0.0525, n=41):
     return df, strikes
 
 
+def test_no_chain_test_depends_on_the_wall_clock():
+    """These tests pin `today`. Without it, time-to-expiry shrinks daily and
+    the suite fails on an arbitrary future morning -- which it did, on
+    2026-09-20, taking CI with it."""
+    src = pathlib.Path(__file__).read_text()
+    calls = src.count("implied_from_chain(")
+    pinned = src.count("today=TODAY")
+    assert pinned >= calls - 1, (
+        f"{calls} implied_from_chain calls but only {pinned} pin `today`"
+    )
+
+
 def test_recovers_a_known_lognormal():
     """The whole benchmark rests on this: given a chain from a known
     distribution, the recovered CDF must match it."""
     spot, vol, t = 23000.0, 0.15, 30 / 365
     chain, _ = synthetic_chain(spot, vol, t)
-    d = implied_from_chain(chain, expiry="19-Oct-2026",
-                           today=__import__("datetime").date(2026, 9, 19))
+    d = implied_from_chain(chain, expiry=EXPIRY, today=TODAY)
     for level in (spot * 0.95, spot, spot * 1.05):
         mu = np.log(spot) + (0.0525 - vol**2 / 2) * t
         truth = stats.norm.cdf((np.log(level) - mu) / (vol * np.sqrt(t)))
@@ -48,20 +67,20 @@ def test_recovers_a_known_lognormal():
 
 def test_recovered_cdf_is_monotone_and_bounded():
     chain, _ = synthetic_chain()
-    d = implied_from_chain(chain, expiry="19-Oct-2026")
+    d = implied_from_chain(chain, expiry=EXPIRY, today=TODAY)
     assert np.all(np.diff(d.cdf) >= -1e-9)
     assert d.cdf.min() >= 0.0 and d.cdf.max() <= 1.0
 
 
 def test_median_is_near_spot():
     chain, _ = synthetic_chain(spot=23000.0)
-    d = implied_from_chain(chain, expiry="19-Oct-2026")
+    d = implied_from_chain(chain, expiry=EXPIRY, today=TODAY)
     assert 22000 < d.median() < 24000
 
 
 def test_uncertainty_widens_with_volatility():
-    lo = implied_from_chain(synthetic_chain(vol=0.10)[0], expiry="19-Oct-2026")
-    hi = implied_from_chain(synthetic_chain(vol=0.30)[0], expiry="19-Oct-2026")
+    lo = implied_from_chain(synthetic_chain(vol=0.10)[0], expiry=EXPIRY, today=TODAY)
+    hi = implied_from_chain(synthetic_chain(vol=0.30)[0], expiry=EXPIRY, today=TODAY)
     width = lambda d: d.quantile(0.95) - d.quantile(0.05)  # noqa: E731
     assert width(hi) > width(lo)
 
@@ -73,7 +92,7 @@ def test_barrier_probability_exceeds_terminal():
     would invalidate any comparison against the council.
     """
     chain, _ = synthetic_chain(spot=23000.0)
-    d = implied_from_chain(chain, expiry="19-Oct-2026")
+    d = implied_from_chain(chain, expiry=EXPIRY, today=TODAY)
     level = 22000.0
     assert d.prob_touch_below(level) > d.prob_below(level)
     assert d.prob_touch_below(level) <= 1.0
@@ -81,25 +100,25 @@ def test_barrier_probability_exceeds_terminal():
 
 def test_barrier_probability_is_capped_at_one():
     chain, _ = synthetic_chain(spot=23000.0)
-    d = implied_from_chain(chain, expiry="19-Oct-2026")
+    d = implied_from_chain(chain, expiry=EXPIRY, today=TODAY)
     assert d.prob_touch_below(23000.0 * 1.5) <= 1.0
 
 
 def test_thin_chain_is_rejected_not_fudged():
     chain, _ = synthetic_chain(n=6)
     with pytest.raises(ValueError, match="liquid strikes|too thin"):
-        implied_from_chain(chain, expiry="19-Oct-2026")
+        implied_from_chain(chain, expiry=EXPIRY, today=TODAY)
 
 
 def test_unreliable_recovery_is_flagged():
     """A degenerate chain must set reliable=False rather than return nonsense."""
-    rows = [{"strike": float(k), "expiry": "19-Oct-2026", "side": s, "oi": 1,
+    rows = [{"strike": float(k), "expiry": EXPIRY, "side": s, "oi": 1,
              "ltp": 1.0, "bid": 0.9, "ask": 1.1, "iv": 10, "volume": 1}
             for k in np.linspace(20000, 26000, 30) for s in ("CE", "PE")]
     df = pd.DataFrame(rows)
     df.attrs["underlying"] = 23000.0
     try:
-        d = implied_from_chain(df, expiry="19-Oct-2026")
+        d = implied_from_chain(df, expiry=EXPIRY, today=TODAY)
         assert d.diagnostics["reliable"] is False
         assert d.diagnostics["unreliable_reason"]
     except ValueError:
@@ -107,13 +126,13 @@ def test_unreliable_recovery_is_flagged():
 
 
 def test_strict_mode_raises_on_unreliable():
-    rows = [{"strike": float(k), "expiry": "19-Oct-2026", "side": s, "oi": 1,
+    rows = [{"strike": float(k), "expiry": EXPIRY, "side": s, "oi": 1,
              "ltp": 1.0, "bid": 0.9, "ask": 1.1, "iv": 10, "volume": 1}
             for k in np.linspace(20000, 26000, 30) for s in ("CE", "PE")]
     df = pd.DataFrame(rows)
     df.attrs["underlying"] = 23000.0
     with pytest.raises(ValueError):
-        implied_from_chain(df, expiry="19-Oct-2026", strict=True)
+        implied_from_chain(df, expiry=EXPIRY, today=TODAY, strict=True)
 
 
 def test_risk_premium_adjustment_reduces_downside_probability():

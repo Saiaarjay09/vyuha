@@ -74,21 +74,39 @@ class Provider(ABC):
 class OllamaProvider(Provider):
     name = "ollama"
 
-    def __init__(self, host: str | None = None, timeout: float = 300.0):
+    def __init__(self, host: str | None = None, timeout: float | None = None,
+                 num_ctx: int | None = None):
         self.host = (host or settings.ollama_host).rstrip("/")
-        self.timeout = timeout
+        self.timeout = timeout if timeout is not None else settings.llm_timeout
+        self.num_ctx = num_ctx if num_ctx is not None else settings.llm_num_ctx
+        self._sizes: dict[str, int] | None = None
         self._models: list[str] | None = None
 
     def available_models(self) -> list[str]:
         if self._models is not None:
             return self._models
+        self._sizes = {}
         try:
             r = httpx.get(f"{self.host}/api/tags", timeout=10.0)
             r.raise_for_status()
-            self._models = [m["name"] for m in r.json().get("models", [])]
+            models = r.json().get("models", [])
+            self._models = [m["name"] for m in models]
+            self._sizes = {m["name"]: int(m.get("size", 0)) for m in models}
         except Exception:
             self._models = []
         return self._models
+
+    def model_size(self, name: str) -> int:
+        """Bytes on disk, a good proxy for how slow a model will be.
+
+        Generation time dominates council latency and scales roughly with
+        parameter count, so a 14B model is several times slower per member
+        than an 8B one. When several models would serve equally well, the
+        smaller one gets the same job done sooner.
+        """
+        if getattr(self, "_sizes", None) is None:
+            self.available_models()
+        return (self._sizes or {}).get(name, 0)
 
     def generate(
         self, system: str, user: str, model: str, temperature: float = 0.3,
@@ -99,10 +117,19 @@ class OllamaProvider(Provider):
             "system": system,
             "prompt": user,
             "stream": False,
-            "options": {"temperature": temperature, "num_predict": max_tokens},
-            # Keep the model resident. Without this Ollama can unload between
-            # members and pay the load cost again on the next one.
-            "keep_alive": "15m",
+            "options": {
+                "temperature": temperature,
+                "num_predict": max_tokens,
+                # Context window, and a real memory lever. Ollama defaults to
+                # whatever the model advertises -- often 32k -- and reserves a
+                # KV cache to match. On a 14B model that is many gigabytes held
+                # for prompts that are ~1,500 tokens. Sizing it to what we
+                # actually send frees enough memory for a second model family
+                # to stay resident alongside.
+                "num_ctx": self.num_ctx,
+            },
+            # Keep the model resident between members of the same round.
+            "keep_alive": "10m",
         }
         if json_mode:
             payload["format"] = "json"
@@ -117,6 +144,12 @@ class OllamaProvider(Provider):
                 latency_s=time.perf_counter() - t0,
                 prompt_tokens=d.get("prompt_eval_count"),
                 completion_tokens=d.get("eval_count"),
+            )
+        except httpx.TimeoutException:
+            return LLMResponse(
+                "", model, time.perf_counter() - t0,
+                error=f"timed out after {self.timeout:.0f}s (model may be "
+                      "loading, or memory is exhausted)",
             )
         except Exception as exc:  # noqa: BLE001
             return LLMResponse("", model, time.perf_counter() - t0, error=str(exc))

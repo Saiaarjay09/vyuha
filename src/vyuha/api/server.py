@@ -539,18 +539,21 @@ def _answer_council(req: AskRequest, emit=None) -> dict:
             })
 
     def on_round(rnd: int, v) -> None:
-        # A preliminary answer after round 0 lands in about a quarter of the
-        # time the full deliberation takes. Showing it, clearly labelled, beats
-        # a spinner -- and the number rarely moves much afterwards.
+        # Round 0 lands in roughly half the time the full deliberation takes.
+        # Showing it, clearly labelled as provisional, beats a spinner: on a
+        # ten-member panel of 14B models the difference is ~65s versus ~145s,
+        # and the number rarely moves much in the second round anyway.
         if emit:
-            emit("preliminary", {
-                "round": rnd, "probability": v.probability,
-                "dispersion": v.dispersion, "n_members": v.n_members,
-            })
+            emit("preliminary", _verdict_payload(req, q, v, packet, council, resolves))
         done["n"] = 0
 
     verdict = council.run(q, packet, on_member=on_member, on_round=on_round)
+    return _verdict_payload(req, q, verdict, packet, council, resolves)
 
+
+def _verdict_payload(req, q, verdict, packet, council, resolves) -> dict:
+    """Shape a verdict for the client. Used for both the provisional
+    round-0 answer and the final one, so they render identically."""
     families = {m.split(":")[0] for m in council._model_for.values()}
     return {
         "route": "council",
@@ -583,6 +586,37 @@ def _answer_council(req: AskRequest, emit=None) -> dict:
             f"families to fix this."
         ),
     }
+
+
+@app.get("/status", response_class=HTMLResponse)
+def status_page() -> str:
+    """Plain-HTML reachability check, deliberately NOT under /api/.
+
+    If this renders but the main page reports itself offline, the server is
+    healthy and something in the browser is blocking its requests.
+    """
+    from vyuha.council.providers import EchoProvider, default_provider
+
+    prov = default_provider()
+    try:
+        models = prov.available_models()
+    except Exception:  # noqa: BLE001
+        models = []
+    return (
+        "<!doctype html><meta charset=utf-8>"
+        "<title>Vyuha status</title>"
+        "<style>body{font-family:system-ui;max-width:40em;margin:3em auto;"
+        "padding:0 1em;line-height:1.6}code{background:#eee;padding:2px 5px}</style>"
+        "<h1>Vyuha is running</h1>"
+        f"<p>Version {__version__}, inference provider <code>{prov.name}</code>, "
+        f"{len(models)} model(s) available: <code>{', '.join(models[:6]) or 'none'}</code>.</p>"
+        f"<p>Council available: <b>{'yes' if not isinstance(prov, EchoProvider) else 'no'}</b>. "
+        "Live figures and stress tests work either way.</p>"
+        "<p>If you can read this but the main page says it is offline, the server "
+        "is fine and your browser is blocking its requests &mdash; usually an ad "
+        "or privacy blocker. Pause it for this site and reload.</p>"
+        "<p><a href=\"../vyuha\">Back to Vyuha</a></p>"
+    )
 
 
 @app.get("/", response_class=HTMLResponse)

@@ -278,7 +278,8 @@ function renderCouncil(d,preliminary){
     <div class="gscale"><span>Won't happen</span><span>Will happen</span></div>
     <p class="standfirst">${standfirst(d)}</p>`;
 
-  if(preliminary) h+=`<p class="prelim">Preliminary — the advisors are still deliberating; this may shift.</p>`;
+  if(preliminary) h+=`<p class="prelim">First-round answer — the advisors are now
+      reviewing each other's views, so this may shift. Usually not by much.</p>`;
   if(d.independence_warning)
     h+=`<div class="caution"><b>Worth knowing.</b> Every advisor here runs on the same
         AI model, so they tend to make the same mistakes. Their agreement means less
@@ -365,7 +366,11 @@ async function health(){
     statEl.textContent = !d.council_available ? 'data only'
       : d.distinct_model_families<2 ? '1 model'
       : `${d.models.length} models`;
-  }catch(e){statEl.textContent='offline';}
+  }catch(e){
+    statEl.textContent='offline';
+    statEl.title='The page could not reach its own API. Usually an ad/privacy '
+      +'blocker, or the server is not running.';
+  }
 }
 
 const EXAMPLES=['Will the Nifty 50 fall below 22,900 in the next 30 days?',
@@ -425,11 +430,19 @@ async function submit(text){
           if(!prelim)pending.querySelector('.load').textContent=
             `Consulting the advisors — ${d.done} of ${d.total}`;
         }else if(ev==='preliminary'){
-          prelim=d;
+          // Show the round-1 answer now rather than holding a spinner for the
+          // deliberation round. It is replaced in place when the final
+          // verdict arrives.
+          if(d && d.probability!=null){
+            if(prelim){ prelim.outerHTML=renderCouncil(d,true); prelim=document.querySelector('#prov'); }
+            else { pending.style.display='none';
+                   prelim=add(renderCouncil(d,true)); prelim.id='prov'; }
+          }
         }else if(ev==='error'){
           pending.className='err';pending.textContent='Something went wrong: '+d.error;
         }else if(ev==='done'){
           pending.remove();
+          if(prelim){ prelim.remove(); prelim=null; }
           add(d.route==='council'?renderCouncil(d)
              :d.route==='data'?renderData(d)
              :d.route==='no_data'?renderNoData(d)
@@ -437,7 +450,27 @@ async function submit(text){
         }
       }
     }
-  }catch(e){pending.className='err';pending.textContent='Could not get an answer: '+e.message;}
+  }catch(e){
+    // fetch() reports a blocked request and an unreachable server identically
+    // as "Failed to fetch", so the message has to cover both rather than
+    // guessing. A content blocker is by far the commonest cause when the page
+    // itself loaded but its requests do not.
+    const blocked = /failed to fetch|networkerror|load failed/i.test(e.message||'');
+    pending.className='err';
+    pending.innerHTML = blocked
+      ? `<b>Could not reach the server.</b><br><br>
+         The page loaded, but its requests were refused before leaving your
+         browser. Two usual causes:<br><br>
+         1. <b>An ad or privacy blocker</b> (uBlock, AdGuard, Brave Shields,
+         Safari content blockers). Pause it for this site and reload &mdash;
+         this is the most common cause by far.<br>
+         2. <b>The server is asleep.</b> It runs on a personal machine; if that
+         machine is off, nothing will load.<br><br>
+         <a href="${esc(BASE)}/api/health" target="_blank">Open the health
+         check directly</a> &mdash; if that page shows JSON, the server is fine
+         and something in the browser is blocking it.`
+      : 'Could not get an answer: '+esc(e.message);
+  }
   finally{busy=false;go.disabled=false;qEl.focus();}
 }
 

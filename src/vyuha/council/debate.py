@@ -157,9 +157,46 @@ class Council:
         self._resolve_models()
 
     def _resolve_models(self) -> None:
+        """Map each persona to a model, bounded by how many can be resident.
+
+        Diversity across model families is the point of the council, but it is
+        not free: each family must be loaded to be used. Beyond
+        ``max_resident_models`` the machine spends its time swapping models
+        rather than answering, so the roster is capped and the substitution is
+        recorded. Two genuinely different families already break the
+        correlated-error problem; five does not help five times as much.
+        """
+        from collections import Counter
+
+        chosen: list[str] = []
         for p in self.personas:
             m = self.provider.resolve_model(p.preferred_models)
-            self._model_for[p.name] = m or "unavailable"
+            chosen.append(m or "unavailable")
+
+        limit = max(1, settings.max_resident_models)
+        counts = Counter(c for c in chosen if c != "unavailable")
+
+        # Rank by how many personas want it, then by speed. Size on disk is a
+        # good proxy for generation time, and generation time is essentially
+        # all of a council run's latency -- a 14B model is several times
+        # slower per member than an 8B one, and on a ten-member panel that is
+        # the difference between a usable tool and an abandoned tab.
+        size_of = getattr(self.provider, "model_size", lambda _m: 0)
+        if settings.prefer_fast_models:
+            ranked = sorted(counts, key=lambda m: (size_of(m), -counts[m]))
+        else:
+            ranked = sorted(counts, key=lambda m: (-counts[m], size_of(m)))
+        allowed = set(ranked[:limit])
+
+        for p, m in zip(self.personas, chosen, strict=True):
+            if m != "unavailable" and m not in allowed and allowed:
+                fallback = ranked[0]
+                self._substitutions.append(
+                    f"{p.name}: {m} -> {fallback} (capped at "
+                    f"{limit} resident model families)"
+                )
+                m = fallback
+            self._model_for[p.name] = m
             if m and m not in p.preferred_models and m.split(":")[0] != p.preferred_models[0].split(":")[0]:
                 self._substitutions.append(
                     f"{p.name}: wanted {p.preferred_models[0]}, using {m}"
@@ -317,17 +354,25 @@ class Council:
         peer_summary: str | None, current: dict[str, Forecast],
         on_member=None,
     ) -> list[Forecast]:
-        """Query every member for one round, with bounded parallelism.
+        """Query every member for one round, grouped by model.
 
-        Concurrency here is worth only about 1.3x -- a single local model is
-        compute-bound, and pushing ten simultaneous requests at it measured
-        *slower* than running them one at a time. So the pool is deliberately
-        small. The real speed came from shortening the output, not from
-        fanning out.
+        Members are independent within a round, so the ORDER is free -- but
+        the grouping is not, and getting it wrong is what made a ten-member
+        council hang indefinitely.
 
-        Members are independent within a round by design, so parallelism
-        changes nothing about the result.
+        Personas are deliberately spread across different model families to
+        decorrelate their errors. Run them in persona order with a parallel
+        pool and you ask the runtime to hold every one of those families in
+        memory simultaneously. With 3B models that is fine; with 14B models it
+        exhausts memory, and the member whose model cannot load never returns.
+
+        So members are grouped by model and the groups run one after another.
+        Within a group the model is already resident, so parallelism there is
+        free. At most ``max_resident_models`` families are live at any moment,
+        and every request is individually bounded by a timeout, so a member
+        that stalls is recorded as failed rather than blocking the round.
         """
+        from collections import defaultdict
         from concurrent.futures import ThreadPoolExecutor
 
         def one(p: Persona) -> Forecast:
@@ -339,11 +384,23 @@ class Council:
                     pass
             return fc
 
-        workers = max(1, min(self.config.max_workers, len(self.personas)))
-        if workers == 1:
-            return [one(p) for p in self.personas]
-        with ThreadPoolExecutor(max_workers=workers) as ex:
-            return list(ex.map(one, self.personas))
+        by_model: dict[str, list[Persona]] = defaultdict(list)
+        for p in self.personas:
+            by_model[self._model_for.get(p.name, "unavailable")].append(p)
+
+        out: list[Forecast] = []
+        for group in by_model.values():
+            workers = max(1, min(self.config.max_workers, len(group)))
+            if workers == 1:
+                out.extend(one(p) for p in group)
+            else:
+                with ThreadPoolExecutor(max_workers=workers) as ex:
+                    out.extend(ex.map(one, group))
+
+        # Restore the declared persona order so verdicts read consistently.
+        order = {p.name: i for i, p in enumerate(self.personas)}
+        out.sort(key=lambda f: order.get(f.member, 999))
+        return out
 
     def run(self, question: Question, packet: EvidencePacket,
             on_member=None, on_round=None) -> CouncilVerdict:

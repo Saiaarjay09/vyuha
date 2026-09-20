@@ -46,6 +46,24 @@ class Settings(BaseSettings):
     llm_api_key: str = ""                # set via env/secret, never committed
     llm_model: str = ""                  # override model selection entirely
     ollama_host: str = "http://localhost:11434"
+    # A single hung member must never block a whole council run, so every
+    # request is bounded. Generous enough to cover a cold model load, short
+    # enough that a stuck one is reported rather than waited on forever.
+    llm_timeout: float = 120.0
+    # Context window. Prompts here run ~1,500 tokens; letting Ollama reserve a
+    # 32k KV cache per model is what exhausts memory once several families are
+    # in play.
+    llm_num_ctx: int = 8192
+    # How many distinct model families may be held in memory at once. Running
+    # members of different models in parallel forces simultaneous loads, which
+    # on a machine with finite RAM causes thrashing or an outright stall.
+    max_resident_models: int = 2
+    # When several installed models could serve, prefer the smaller ones.
+    # Generation time is essentially all of a council run's latency and scales
+    # with parameter count, so on a ten-member panel the choice between an 8B
+    # and a 14B model is the difference between waiting and giving up. Set
+    # false to honour each persona's stated preference regardless of cost.
+    prefer_fast_models: bool = True
     council_log_dir: Path = REPO_ROOT / "council_runs"
     council_rounds: int = 2
     council_temperature: float = 0.3
