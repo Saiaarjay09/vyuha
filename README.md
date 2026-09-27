@@ -121,6 +121,15 @@ anchoring is what collapses a multi-agent system into one forecaster with extra
 steps. Later rounds show an *anonymised* distribution plus the strongest
 counterargument.
 
+**The panel sizes itself.** The standard error of the pooled estimate falls as
+σ/√n, so when members agree the next one barely moves the answer — and costs
+several seconds. Vyuha polls a deliberately opposed seed (hawk, momentum bull,
+quant, red team), measures that precision, and recruits more only while it is
+still poor. Round two then re-asks *only the dissenters*, since a member already
+sitting on consensus has nothing to revise toward. Easy questions finish with
+four members; contested ones still use all ten, which is when it is worth
+paying for.
+
 ---
 
 ## Risk engine
@@ -292,6 +301,36 @@ See [docs/DEPLOY.md](docs/DEPLOY.md) — including the Tailscale footgun where
 every other site on that port.
 
 ---
+
+## Projecting an investment
+
+```bash
+vyuha project 500000 7 --compare      # ₹5 lakh, 7 years
+vyuha project 10000 15 --sip          # ₹10,000 a month for 15 years
+```
+
+Ask in plain English too: *"If I invest ₹5 lakh in equity for 7 years?"*
+
+It never returns a single number. It block-bootstraps **actual history** —
+Indian equity back to 1957, gold to 1968 — drawing 12-month blocks rather than
+independent months, because iid sampling destroys the volatility clustering
+that makes a real drawdown deep rather than merely frequent.
+
+For ₹5 lakh in Indian equity over 7 years:
+
+| | |
+|---|---|
+| Middle outcome | ₹9,54,869 |
+| …less tax | ₹9,13,635 |
+| **…less inflation — worth today** | **₹6,54,955** |
+| Honest range (5th–95th) | ₹3,45,509 – ₹28,13,225 |
+| **Chance of ending below what you put in** | **15%** |
+| Chance of not beating inflation | 30% |
+| Typical worst fall along the way | −32% |
+
+The uncomfortable numbers are deliberately not buried. A tool that answers
+"what will ₹5 lakh become" with one confident figure has produced investment
+advice dressed as arithmetic.
 
 ## How it learns
 

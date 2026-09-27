@@ -333,3 +333,73 @@ def test_hypotheses_are_marked_speculative():
 
     c = Candidate(key="k", name="n", url="u", source="llm_hypothesis", speculative=True)
     assert c.to_record().evidence["speculative"] is True
+
+
+# ------------------------------------------------------- adaptive panel
+
+
+def test_standard_error_discriminates_agreement_from_deadlock():
+    """The stopping rule. Agreeing members pin the estimate down; a split panel
+    does not, and only then is another opinion worth several seconds."""
+    from vyuha.council.debate import Council
+    from vyuha.council.schema import Forecast
+
+    def se(ps):
+        return Council._pooled_standard_error(
+            [Forecast(question_id="q", member=str(i), model="m", probability=p)
+             for i, p in enumerate(ps)]
+        )
+
+    assert se([0.60, 0.62, 0.58, 0.61]) < 0.10
+    assert se([0.10, 0.90, 0.30, 0.70]) > 0.50
+    assert se([0.5]) == float("inf"), "one member can never be precise"
+
+
+def test_seed_panel_spans_opposed_views():
+    """Seeding with members who already agree would stop early for the wrong
+    reason, so the seed must contain structurally opposed personas."""
+    from vyuha.council import Council, CouncilConfig
+    from vyuha.council.providers import EchoProvider
+
+    c = Council(provider=EchoProvider(0.6),
+                config=CouncilConfig(rounds=1, use_track_record=False))
+    seed = {p.name for p in c._seed_and_reserve()[0]}
+    assert "red_team" in seed, "the adversarial member must be in the seed"
+    assert seed & {"hawk", "dove"}
+    assert seed & {"momentum_bull", "value_bear"}
+
+
+def test_adaptive_panel_stops_early_when_members_agree():
+    from vyuha.council import Council, CouncilConfig, EvidencePacket, Question, QuestionKind
+    from vyuha.council.providers import EchoProvider
+
+    q = Question(id="q", kind=QuestionKind.BINARY, text="Will X happen?",
+                 resolution_criteria="c",
+                 resolution_date=__import__("datetime").date(2027, 1, 1),
+                 resolution_source="S")
+    p = EvidencePacket(as_of=__import__("datetime").datetime(2026, 9, 20))
+    p.add("X", 1.0, source="t")
+
+    c = Council(provider=EchoProvider(0.42),
+                config=CouncilConfig(rounds=1, use_track_record=False,
+                                     adaptive_panel=True, min_panel=4))
+    v = c.run(q, p)
+    # Echo returns an identical probability, so the seed alone is conclusive.
+    assert v.n_members == 4, f"stopped at {v.n_members}, expected the seed of 4"
+    assert any("panel stopped" in n for n in v.notes)
+
+
+def test_adaptive_panel_can_be_disabled():
+    from vyuha.council import Council, CouncilConfig, EvidencePacket, Question, QuestionKind
+    from vyuha.council.providers import EchoProvider
+
+    q = Question(id="q", kind=QuestionKind.BINARY, text="Will X happen?",
+                 resolution_criteria="c",
+                 resolution_date=__import__("datetime").date(2027, 1, 1),
+                 resolution_source="S")
+    p = EvidencePacket(as_of=__import__("datetime").datetime(2026, 9, 20))
+    p.add("X", 1.0, source="t")
+    c = Council(provider=EchoProvider(0.42),
+                config=CouncilConfig(rounds=1, use_track_record=False,
+                                     adaptive_panel=False))
+    assert c.run(q, p).n_members == 10

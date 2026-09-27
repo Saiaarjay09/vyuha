@@ -126,6 +126,29 @@ class CouncilConfig:
     # on real runs this removes roughly half the work without touching the
     # answer, because a converged panel does not move in round two anyway.
     deliberate_if_dispersion_above: float = 0.08
+
+    # --- adaptive panel ---------------------------------------------------
+    # Asking ten members when the first four already agree buys almost
+    # nothing. The standard error of the pooled estimate falls as
+    # sigma/sqrt(n), so when sigma is small the marginal member barely moves
+    # the answer -- and each one costs several seconds of generation.
+    #
+    # So: poll a deliberately diverse seed, measure how precisely the pooled
+    # estimate is pinned down, and recruit more members only while that
+    # precision is still poor. On an easy question this halves the work; on a
+    # contested one the full panel is still used, which is exactly when it is
+    # worth paying for.
+    adaptive_panel: bool = True
+    min_panel: int = 4                    # never decide on fewer than this
+    panel_se_target: float = 0.28         # stop when SE of pooled log-odds is below
+    recruit_batch: int = 3                # how many to add per extra wave
+    # Round two exists so members can revise after seeing disagreement. A
+    # member already sitting on the consensus has nothing to revise toward, and
+    # in practice does not move. So only DISSENTERS are re-polled, and everyone
+    # else keeps their first answer. This is where most of round two's cost
+    # goes, and almost none of its value.
+    revisit_only_dissenters: bool = True
+    dissent_threshold: float = 0.10       # |p - pooled| above which a member is re-asked
     pool: PoolConfig = field(default_factory=PoolConfig)
     max_tokens: int = 700
     log_dir: Path | None = None
@@ -154,6 +177,7 @@ class Council:
         )
         self._model_for: dict[str, str] = {}
         self._substitutions: list[str] = []
+        self._adaptive_note: str = ""
         self._resolve_models()
 
     def _resolve_models(self) -> None:
@@ -349,6 +373,41 @@ class Council:
 
     # -------------------------------------------------------------------- run
 
+    # Seeded first because they span the widest disagreement: opposed on
+    # inflation, opposed on valuation, a base-rate purist, and the member whose
+    # only job is to attack the consensus. If THESE agree, the panel will.
+    SEED_ORDER: tuple[str, ...] = (
+        "hawk", "momentum_bull", "quant", "red_team", "dove", "value_bear",
+        "flows", "global_macro", "policy", "behavioural",
+    )
+
+    def _seed_and_reserve(self) -> tuple[list[Persona], list[Persona]]:
+        by_name = {p.name: p for p in self.personas}
+        ordered = [by_name[n] for n in self.SEED_ORDER if n in by_name]
+        ordered += [p for p in self.personas if p.name not in self.SEED_ORDER]
+        k = max(1, min(self.config.min_panel, len(ordered)))
+        return ordered[:k], ordered[k:]
+
+    @staticmethod
+    def _pooled_standard_error(forecasts: list[Forecast]) -> float:
+        """How precisely the pooled estimate is pinned down, in log-odds.
+
+        sigma/sqrt(n) over member log-odds. Small means the members concur and
+        another one will not move the answer; large means they genuinely
+        disagree and more opinions carry information.
+        """
+        import math
+
+        from vyuha.council.scoring import clamp, logit
+
+        ps = [f.probability for f in forecasts if f.parse_ok and f.probability is not None]
+        if len(ps) < 2:
+            return math.inf
+        los = [logit(clamp(p)) for p in ps]
+        mean = sum(los) / len(los)
+        var = sum((x - mean) ** 2 for x in los) / (len(los) - 1)
+        return math.sqrt(var / len(los))
+
     def _ask_all(
         self, question: Question, packet: EvidencePacket, rnd: int,
         peer_summary: str | None, current: dict[str, Forecast],
@@ -419,10 +478,77 @@ class Council:
         peer_summary: str | None = None
         verdict: CouncilVerdict | None = None
 
+        full_panel = list(self.personas)
         for rnd in range(self.config.rounds):
-            forecasts = self._ask_all(
-                question, packet, rnd, peer_summary, current, on_member
-            )
+            if self.config.adaptive_panel and rnd == 0 and len(full_panel) > self.config.min_panel:
+                seed, reserve = self._seed_and_reserve()
+                self.personas = seed
+                forecasts = self._ask_all(
+                    question, packet, rnd, peer_summary, current, on_member
+                )
+                waves = 0
+                while reserve:
+                    se = self._pooled_standard_error(forecasts)
+                    if se <= self.config.panel_se_target:
+                        verdict_note = (
+                            f"panel stopped at {len(forecasts)} of {len(full_panel)} "
+                            f"members: pooled estimate already precise to "
+                            f"{se:.3f} log-odds, so further members would not "
+                            "move it"
+                        )
+                        break
+                    wave = reserve[: self.config.recruit_batch]
+                    reserve = reserve[self.config.recruit_batch:]
+                    self.personas = wave
+                    forecasts += self._ask_all(
+                        question, packet, rnd, peer_summary, current, on_member
+                    )
+                    waves += 1
+                else:
+                    verdict_note = (
+                        f"full panel of {len(forecasts)} used: members kept "
+                        "disagreeing, so every opinion was worth collecting"
+                    )
+                self.personas = full_panel
+                self._adaptive_note = verdict_note
+            elif rnd > 0 and self.config.revisit_only_dissenters and verdict is not None:
+                pooled = verdict.probability
+                keep: list[Forecast] = []
+                revisit: list[Persona] = []
+                by_name = {p.name: p for p in full_panel}
+                for f in history[-1].member_forecasts:
+                    moved = (
+                        f.parse_ok and f.probability is not None
+                        and pooled is not None
+                        and abs(f.probability - pooled) >= self.config.dissent_threshold
+                    )
+                    if moved and f.member in by_name:
+                        revisit.append(by_name[f.member])
+                    else:
+                        keep.append(f)
+                if not revisit:
+                    verdict.notes.append(
+                        "no member dissented far enough to be worth re-asking; "
+                        "deliberation round skipped"
+                    )
+                    break
+                self.personas = revisit
+                revised = self._ask_all(
+                    question, packet, rnd, peer_summary, current, on_member
+                )
+                self.personas = full_panel
+                forecasts = keep + revised
+                order = {p.name: i for i, p in enumerate(full_panel)}
+                forecasts.sort(key=lambda f: order.get(f.member, 999))
+                self._adaptive_note = (
+                    (self._adaptive_note + "; " if self._adaptive_note else "")
+                    + f"round {rnd}: re-asked only the {len(revised)} dissenting "
+                      f"member(s), kept {len(keep)} unchanged"
+                )
+            else:
+                forecasts = self._ask_all(
+                    question, packet, rnd, peer_summary, current, on_member
+                )
             if not any(f.parse_ok for f in forecasts) and not self.config.fail_open:
                 raise RuntimeError("every council member failed to produce a forecast")
 
@@ -458,6 +584,8 @@ class Council:
                 peer_summary = self._peer_summary(question, forecasts, verdict)
 
         assert verdict is not None
+        if getattr(self, "_adaptive_note", ""):
+            verdict.notes.append(self._adaptive_note)
         verdict.notes.append(f"rounds_run={len(history)}")
         verdict.notes.append(f"evidence_fingerprint={packet.fingerprint()}")
         if self._substitutions:

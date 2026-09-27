@@ -300,6 +300,20 @@ lxml, beautifulsoup4 Parsing RBI's HTML, which has no API.
                        -> promoted. Promotion is by human pull request only.
 
 --------------------------------------------------------------------------------
+  projection.py -- what an investment might become
+--------------------------------------------------------------------------------
+  Block bootstrap over real history: Indian equity monthly since 1957, gold
+  since 1968. Twelve-month blocks are chained rather than individual months
+  sampled, because iid sampling destroys volatility clustering and mean
+  reversion -- producing a distribution too narrow in the middle and too thin
+  in the tails, which flatters the result in the direction that matters.
+
+  Returns a distribution and never a point estimate, with the chance of loss,
+  the chance of merely matching inflation, and the value after BOTH tax and
+  inflation. Indian capital-gains treatment is applied and restated with every
+  result, because it changes.
+
+--------------------------------------------------------------------------------
   api/  -- the website
 --------------------------------------------------------------------------------
   server.py (592)      FastAPI. Routes a question to council / data lookup /

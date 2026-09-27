@@ -522,6 +522,73 @@ def world_country(
                   "Context for comparing economies, not a timing signal.[/]")
 
 
+@app.command()
+def project(
+    amount: float = typer.Argument(..., help="Lump sum, or the MONTHLY amount with --sip."),
+    years: float = typer.Argument(..., help="Horizon in years."),
+    asset: str = typer.Option("indian_equity", help="indian_equity | gold | silver | "
+                                                    "us_equity | fixed_deposit | debt_fund"),
+    sip: bool = typer.Option(False, "--sip", help="Treat the amount as a monthly contribution."),
+    compare: bool = typer.Option(False, "--compare", help="Show other asset classes too."),
+) -> None:
+    """Project an investment as a distribution of outcomes.
+
+    Never a single number. The point of this command is the spread and the
+    downside, not the median.
+    """
+    from vyuha.projection import compare_assets
+    from vyuha.projection import project as _project
+
+    mode = "sip" if sip else "lumpsum"
+    with console.status("simulating..."):
+        try:
+            r = _project(amount, years, asset=asset, mode=mode)
+        except ValueError as exc:
+            console.print(f"[red]{exc}[/]")
+            raise typer.Exit(1) from exc
+
+    rs = lambda v: f"Rs {v:,.0f}"  # noqa: E731
+    t = Table(show_header=True, header_style="bold",
+              title=f"{r.asset_label} - {rs(amount)}"
+                    f"{'/month' if sip else ''} over {years:g}y")
+    t.add_column("outcome")
+    t.add_column("value", justify="right")
+    t.add_row("[dim]you put in[/]", f"[dim]{rs(r.total_invested)}[/]")
+    t.add_row("very unlucky (5th pct)", f"[red]{rs(r.percentiles['p5'])}[/]")
+    t.add_row("unlucky (25th)", rs(r.percentiles["p25"]))
+    t.add_row("[bold]middle (50th)[/]", f"[bold]{rs(r.percentiles['p50'])}[/]")
+    t.add_row("lucky (75th)", rs(r.percentiles["p75"]))
+    t.add_row("very lucky (95th)", f"[green]{rs(r.percentiles['p95'])}[/]")
+    t.add_row("", "")
+    t.add_row("middle, less tax", rs(r.post_tax_percentiles["p50"]))
+    t.add_row("[bold]middle, worth in today's money[/]",
+              f"[bold]{rs(r.net_real_percentiles['p50'])}[/]")
+    console.print(t)
+
+    risk = Table(show_header=False, box=None)
+    risk.add_row("chance of ending below what you put in",
+                 f"[{'red' if r.prob_loss > 0.2 else 'yellow'}]{r.prob_loss:.0%}[/]")
+    risk.add_row("chance of not beating inflation", f"{r.prob_below_inflation:.0%}")
+    risk.add_row("chance a fixed deposit beats it", f"{r.prob_below_fd:.0%}")
+    risk.add_row("typical worst fall along the way", f"{r.max_drawdown_median:.0%}")
+    console.print(risk)
+
+    if compare:
+        c = compare_assets(amount, years, mode=mode)
+        ct = Table(show_header=True, header_style="bold", title="Same money elsewhere")
+        for col in ("asset", "median", "5th pct", "95th pct", "loss risk"):
+            ct.add_column(col, justify="right" if col != "asset" else "left")
+        for _, row in c.iterrows():
+            if row.get("median") != row.get("median"):
+                continue
+            ct.add_row(str(row["asset"]), rs(row["median"]), rs(row["p5"]),
+                       rs(row["p95"]), f"{row['prob_loss']:.0%}")
+        console.print(ct)
+
+    console.print(f"[dim]Resampled from {r.sample_start} to {r.sample_end} "
+                  f"({r.sample_years}y). Not a prediction, and not advice.[/]")
+
+
 @risk_app.command("scenarios")
 def risk_scenarios() -> None:
     """List the stress scenarios and the lesson each one encodes."""

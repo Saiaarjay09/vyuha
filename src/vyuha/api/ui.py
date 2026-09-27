@@ -344,6 +344,78 @@ function renderRisk(d){
   return h+`</table></div></div><p class="foot">Based on what actually happened during each event.</p></article>`;
 }
 
+const rs=v=>v==null?'—':'₹'+Math.round(v).toLocaleString('en-IN');
+
+function renderProjection(d){
+  const p=d.percentiles, rp=d.real_percentiles, tp=d.post_tax_percentiles,
+        np_=d.net_real_percentiles||{};
+  const inv=d.total_invested, med=p.p50;
+  const mult=med/inv;
+  const modeTxt=d.mode==='sip'
+    ? `₹${Math.round(d.amount).toLocaleString('en-IN')} every month for ${d.years} years (₹${Math.round(inv).toLocaleString('en-IN')} invested in total)`
+    : `₹${Math.round(d.amount).toLocaleString('en-IN')} invested once for ${d.years} years`;
+
+  let h=`<article>
+    <p class="verdict" style="font-size:34px">${rs(med)}</p>
+    <p class="pline">most likely outcome · ${esc(d.asset_label)}</p>
+    <div class="gauge"><i style="width:${Math.min(100,(mult/3)*100).toFixed(0)}%;background:var(--accent)"></i></div>
+    <div class="gscale"><span>${rs(p.p5)} (unlucky)</span><span>${rs(p.p95)} (lucky)</span></div>
+
+    <p class="standfirst">${esc(modeTxt)} lands most often around <b>${rs(med)}</b>,
+    but the honest range is wide: <b>${rs(p.p5)}</b> to <b>${rs(p.p95)}</b>.
+    That headline figure shrinks twice before it reaches you: tax takes it to
+    <b>${rs(tp.p50)}</b>, and ${(d.inflation_assumed*100).toFixed(1)}% inflation
+    leaves it worth <b>${rs(np_.p50)}</b> in today's money — against the
+    <b>${rs(inv)}</b> you put in. There is a <b>${(d.prob_loss*100).toFixed(0)}% chance
+    you end up with less than you put in</b>, and a
+    <b>${(d.prob_below_inflation*100).toFixed(0)}% chance</b> you end up no better
+    off than if prices had simply risen. Along the way, a fall of about
+    <b>${Math.abs(d.max_drawdown_median*100).toFixed(0)}%</b> at some point is typical.</p>`;
+
+  h+=`<div class="caution"><b>This is not a prediction, and not advice.</b>
+      It resamples ${esc(d.sample)} of actual history, which assumes the next
+      ${d.years} years resemble some stretch of the past. They may not.</div>`;
+
+  h+=`<div class="sections">`;
+  h+=`<div class="sec"><h3><span class="n">01</span> The range of outcomes</h3><table>
+    <tr><td>Very unlucky (5th percentile)</td><td>${rs(p.p5)}</td></tr>
+    <tr><td>Unlucky (25th)</td><td>${rs(p.p25)}</td></tr>
+    <tr><td><b>Middle (50th)</b></td><td><b>${rs(p.p50)}</b></td></tr>
+    <tr><td>Lucky (75th)</td><td>${rs(p.p75)}</td></tr>
+    <tr><td>Very lucky (95th)</td><td>${rs(p.p95)}</td></tr>
+    <tr><td>You put in</td><td>${rs(inv)}</td></tr></table></div>`;
+
+  h+=`<div class="sec"><h3><span class="n">02</span> What it's really worth</h3><table>
+    <tr><td>You put in</td><td>${rs(inv)}</td></tr>
+    <tr><td>Middle outcome, before anything</td><td>${rs(p.p50)}</td></tr>
+    <tr><td>…less tax</td><td>${rs(tp.p50)}</td></tr>
+    <tr><td><b>…less inflation — worth today</b></td><td><b>${rs(np_.p50)}</b></td></tr>
+    <tr><td>Typical yearly growth, before tax and inflation</td><td>${(d.median_cagr*100).toFixed(1)}%</td></tr>
+    </table><p class="rl" style="margin-top:12px">${esc(d.tax_note)}
+    Inflation assumed ${(d.inflation_assumed*100).toFixed(1)}% a year.</p></div>`;
+
+  h+=`<div class="sec"><h3><span class="n">03</span> The risks</h3><table>
+    <tr><td>Chance of ending below what you put in</td><td>${(d.prob_loss*100).toFixed(0)}%</td></tr>
+    <tr><td>Chance of not beating inflation</td><td>${(d.prob_below_inflation*100).toFixed(0)}%</td></tr>
+    <tr><td>Chance a fixed deposit would have done better</td><td>${(d.prob_below_fd*100).toFixed(0)}%</td></tr>
+    <tr><td>Typical worst fall along the way</td><td>${(d.max_drawdown_median*100).toFixed(0)}%</td></tr>
+    </table></div>`;
+
+  if(d.comparison?.length){
+    h+=`<div class="sec"><h3><span class="n">04</span> Same money elsewhere</h3><table>`;
+    for(const c of d.comparison){
+      if(c.median==null) continue;
+      h+=`<tr><td>${esc(c.asset)}</td><td>${rs(c.median)} <span style="color:var(--faint);font-weight:400">· ${(c.prob_loss*100).toFixed(0)}% loss risk</span></td></tr>`;
+    }
+    h+=`</table><p class="rl" style="margin-top:12px">Median outcome for the same
+        amount and horizon. Higher medians come with wider ranges — that is the
+        trade, not a free lunch.</p></div>`;
+  }
+
+  h+=`</div><p class="foot">${(d.caveats||[]).map(esc).join('<br>')}</p></article>`;
+  return h;
+}
+
 function renderNoModel(d){
   return `<article><p class="verdict" style="font-size:30px;color:var(--mid)">No advisors available</p>
     <p class="standfirst">${esc(d.message)}</p>
@@ -373,10 +445,10 @@ async function health(){
   }
 }
 
-const EXAMPLES=['Will the Nifty 50 fall below 22,900 in the next 30 days?',
-  'What is the price of gold right now?',
-  'Should an Indian investor expect US stocks to beat the Nifty this year?',
-  'What happens to a portfolio in a market crash?'];
+const EXAMPLES=['If I invest ₹5 lakh in equity for 7 years, what might I get?',
+  '₹10,000 monthly SIP in Nifty for 15 years',
+  'Will the Nifty 50 fall below 22,900 in the next 30 days?',
+  'What is the price of gold right now?'];
 
 function intro(){
   return `<div class="intro">
@@ -423,6 +495,7 @@ async function submit(text){
             'convening council':'Consulting the advisors',
             'fetching live data':'Gathering live market data',
             'checking data coverage':'Checking what data exists',
+            'simulating outcomes':'Simulating 20,000 possible futures',
             'running stress scenarios':'Replaying past crises'}[d.stage]||d.stage;
           if(!prelim)pending.querySelector('.load').textContent=t;
         }else if(ev==='member'){
@@ -446,7 +519,10 @@ async function submit(text){
           add(d.route==='council'?renderCouncil(d)
              :d.route==='data'?renderData(d)
              :d.route==='no_data'?renderNoData(d)
-             :d.route==='no_model'?renderNoModel(d):renderRisk(d));
+             :d.route==='no_model'?renderNoModel(d)
+             :d.route==='projection'?renderProjection(d)
+             :d.route==='projection_unparsed'?renderNoData({message:d.message,catalogued:[]})
+             :renderRisk(d));
         }
       }
     }

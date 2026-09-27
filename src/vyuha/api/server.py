@@ -131,11 +131,91 @@ def coverage_gap(text: str) -> dict | None:
     }
 
 
+# --- projection ("what will X become?") --------------------------------------
+_PROJECT_PAT = re.compile(
+    r"\b(invest|investing|investment|sip|lump\s?sum|lumpsum|put in|"
+    r"grow to|worth in|returns? on|corpus|maturity)\b", re.I,
+)
+_AMOUNT_PAT = re.compile(
+    r"(?:rs\.?|inr|₹)?\s*([\d,]+(?:\.\d+)?)\s*(lakhs?|lacs?|crores?|cr|k|thousand)?",
+    re.I,
+)
+_YEARS_PAT = re.compile(r"([\d.]+)\s*(year|yr|y|month|mo)s?\b", re.I)
+
+_ASSET_WORDS: list[tuple[str, tuple[str, ...]]] = [
+    ("indian_equity", ("nifty", "sensex", "indian equity", "indian stock", "equity",
+                       "shares", "stock market", "index fund", "mutual fund", "elss")),
+    ("gold", ("gold", "sovereign gold", "gold etf", "bullion")),
+    ("silver", ("silver",)),
+    ("us_equity", ("us stock", "us equity", "s&p", "nasdaq", "american stock")),
+    ("fixed_deposit", ("fixed deposit", "fd", "term deposit", "recurring deposit")),
+    ("debt_fund", ("debt fund", "bond fund", "debt mutual", "liquid fund")),
+]
+
+_MULT = {"lakh": 1e5, "lakhs": 1e5, "lac": 1e5, "lacs": 1e5,
+         "crore": 1e7, "crores": 1e7, "cr": 1e7,
+         "k": 1e3, "thousand": 1e3}
+
+
+def parse_projection(text: str) -> dict | None:
+    """Pull amount, horizon, asset and mode out of a plain-English question.
+
+    Returns None when there is no amount or no horizon -- projecting without
+    both would mean inventing one, and an invented horizon changes the answer
+    more than almost anything else.
+    """
+    low = text.lower()
+
+    ym = _YEARS_PAT.search(low)
+    if not ym:
+        return None
+    n = float(ym.group(1))
+    years = n / 12 if ym.group(2).lower().startswith("mo") else n
+    if not 0 < years <= 50:
+        return None
+
+    amount = None
+    for m in _AMOUNT_PAT.finditer(low):
+        raw, unit = m.group(1), (m.group(2) or "").lower()
+        # Skip the number that formed the horizon.
+        if m.start() == ym.start() or raw == ym.group(1) and not unit:
+            continue
+        try:
+            val = float(raw.replace(",", ""))
+        except ValueError:
+            continue
+        val *= _MULT.get(unit, 1.0)
+        if val >= 500:
+            amount = val
+            break
+    if amount is None:
+        return None
+
+    asset = "indian_equity"
+    for key, words in _ASSET_WORDS:
+        if any(w in low for w in words):
+            asset = key
+            break
+
+    mode = "sip" if re.search(r"\b(sip|monthly|every month|per month)\b", low) else "lumpsum"
+    return {"amount": amount, "years": years, "asset": asset, "mode": mode}
+
+
 _FORECAST_PAT = re.compile(r"\b(will|would|probability|odds|chance|likely|forecast|"
                            r"expect|predict|by (?:next|the end)|before)\b", re.I)
 
 
 def classify(text: str) -> str:
+    # An amount plus a horizon plus a named asset is already an unambiguous
+    # projection request ("50,000 in a fixed deposit for 10 years"), with or
+    # without a verb like "invest". But "will the Nifty fall below 22,900 in
+    # 30 days" also carries a number and a horizon, so a forecast phrasing
+    # still wins -- that is a question about an event, not about a balance.
+    proj = parse_projection(text)
+    if proj and not _FORECAST_PAT.search(text):
+        return "projection"
+    if proj and _PROJECT_PAT.search(text):
+        return "projection"
     if _RISK_PAT.search(text):
         return "risk"
     if _FORECAST_PAT.search(text):
@@ -416,6 +496,8 @@ def _run_ask(req: AskRequest, emit=None) -> dict:
 
     if kind == "data":
         return _answer_data(req.question, emit)
+    if kind == "projection":
+        return _answer_projection(req.question, emit)
     if kind == "risk":
         return _answer_risk(req.question, emit)
     return _answer_council(req, emit)
@@ -443,6 +525,55 @@ def _answer_data(question: str, emit=None) -> dict:
         "caveats": p.caveats,
         "note": "Direct lookup from live sources. No model involved, nothing inferred.",
     }
+
+
+def _answer_projection(question: str, emit=None) -> dict:
+    """Project an investment. Returns a distribution, never a single number."""
+    from vyuha.projection import ASSET_SOURCES, FIXED_RATE_ASSETS, compare_assets, project
+
+    spec = parse_projection(question)
+    if spec is None:
+        return {"route": "projection_unparsed",
+                "message": "I need both an amount and a time period, e.g. "
+                           "'5 lakh in equity for 7 years'."}
+    if emit:
+        emit("status", {"stage": "simulating outcomes"})
+
+    r = project(**spec)
+    cmp_df = compare_assets(spec["amount"], spec["years"], **{"mode": spec["mode"]})
+
+    return {
+        "route": "projection",
+        "question": question,
+        "asset": r.asset, "asset_label": r.asset_label,
+        "amount": r.amount, "years": r.years, "mode": r.mode,
+        "total_invested": r.total_invested,
+        "percentiles": r.percentiles,
+        "real_percentiles": r.real_percentiles,
+        "post_tax_percentiles": r.post_tax_percentiles,
+        "net_real_percentiles": r.net_real_percentiles,
+        "prob_loss": r.prob_loss,
+        "prob_below_inflation": r.prob_below_inflation,
+        "prob_below_fd": r.prob_below_fd,
+        "median_cagr": r.median_cagr,
+        "max_drawdown_median": r.max_drawdown_median,
+        "n_simulations": r.n_simulations,
+        "sample": f"{r.sample_start} to {r.sample_end} ({r.sample_years}y)",
+        "inflation_assumed": r.inflation_assumed,
+        "tax_note": r.tax_note,
+        "caveats": r.caveats,
+        "comparison": [
+            {k: (None if pd_isna(v) else v) for k, v in row.items()}
+            for row in cmp_df.to_dict("records")
+        ],
+        "available_assets": sorted(set(ASSET_SOURCES) | set(FIXED_RATE_ASSETS)),
+    }
+
+
+def pd_isna(v) -> bool:
+    import math
+
+    return isinstance(v, float) and math.isnan(v)
 
 
 def _answer_risk(question: str, emit=None) -> dict:
