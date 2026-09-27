@@ -103,12 +103,41 @@ Check what you have before and after, every time:
 tailscale serve status
 ```
 
-### There is no authentication
+### Access control
 
-A public Funnel mount is open to anyone who knows the URL. For Vyuha that means
-they can trigger LLM inference on your machine and cause outbound scraping from
-your IP. Prefer `tailnet` unless you specifically want it public, and consider
-putting a token check in front of `/api/ask` if you do.
+A public Funnel mount is reachable by anyone who knows the URL, and every
+question runs a language model on your machine. So set a token:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(24))"
+echo "VYUHA_ACCESS_TOKEN=<that value>" >> .env      # .env is gitignored
+```
+
+What is gated, and what deliberately is not:
+
+| Path | Without a key |
+|---|---|
+| the page, `/status`, `/api/health` | **open** — a shared link must still load and stay diagnosable |
+| `/api/ask`, `/api/evidence` | **401** |
+
+Share the link once with `?key=...` appended. The page stores the key, strips
+it from the address bar (a key left in a URL ends up in history and
+screenshots) and sends it as an `X-Vyuha-Key` header thereafter.
+
+Two details that are easy to get wrong:
+
+**The check runs as middleware, not a route dependency.** FastAPI validates the
+request body before route handlers execute, so a dependency-based check returns
+422 for a malformed body whether or not a key was supplied — letting anyone map
+the schema by trial and error without the key. Middleware runs first.
+
+**Comparison is constant-time** (`hmac.compare_digest`). A plain `==` returns
+faster on an early mismatch and leaks the token a byte at a time to anyone
+patient enough to measure it.
+
+A rate limit (`VYUHA_RATE_LIMIT_PER_HOUR`, default 60) applies even with a
+valid key, so a leaked link costs you a slow afternoon rather than an unbounded
+compute bill.
 
 ## Surviving a reboot
 

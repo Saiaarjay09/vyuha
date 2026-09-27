@@ -26,13 +26,88 @@ import re
 import time
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from vyuha import __version__
+from vyuha.config import settings
 
 app = FastAPI(title="Vyuha", version=__version__, docs_url="/api/docs")
+
+#: Paths that cost real compute and are therefore gated. Everything else --
+#: the page, /status, /api/health -- stays open so a shared link still loads
+#: and remains diagnosable without the key.
+PROTECTED_PREFIXES: tuple[str, ...] = ("/api/ask", "/api/evidence")
+
+
+@app.middleware("http")
+async def _access_middleware(request: Request, call_next):
+    """Check the key BEFORE FastAPI validates the request body.
+
+    Doing this with a route dependency instead looks equivalent and is not:
+    FastAPI validates the body first, so a malformed request returns 422
+    whether or not a key was supplied. That lets anyone map the request schema
+    by trial and error without ever holding the key. Running as middleware
+    means unauthorised requests are refused before anything else is examined.
+    """
+    path = request.url.path
+    if any(p in path for p in PROTECTED_PREFIXES):
+        try:
+            check_access(request, request.headers.get("x-vyuha-key"))
+        except HTTPException as exc:
+            return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+    return await call_next(request)
+
+# ----------------------------------------------------------------- access
+
+_REQUESTS: dict[str, list[float]] = {}
+
+
+def _client_key(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for", "")
+    return (fwd.split(",")[0].strip() or (request.client.host if request.client else "?"))
+
+
+def check_access(request: Request, token: str | None) -> None:
+    """Gate the routes that cost real compute.
+
+    The page itself, /status and /api/health stay open, so a shared link still
+    loads and remains diagnosable. Only inference is gated -- that is the part
+    someone else can run up a bill on.
+
+    The token may arrive as an X-Vyuha-Key header or a ?key= query parameter.
+    The query form exists so a single shareable URL works; it is the weaker
+    option, since URLs end up in browser history and server logs.
+    """
+    expected = settings.access_token
+    if not expected:
+        return  # open by default: correct for localhost, not for a public URL
+
+    supplied = token or request.query_params.get("key", "")
+    # Constant-time comparison: a plain == leaks the token one byte at a time
+    # to anyone patient enough to measure the difference.
+    import hmac
+
+    if not supplied or not hmac.compare_digest(str(supplied), str(expected)):
+        raise HTTPException(
+            status_code=401,
+            detail="This instance requires an access key. Append ?key=... to the "
+                   "URL, or send an X-Vyuha-Key header.",
+        )
+
+    now = time.time()
+    key = _client_key(request)
+    window = [t for t in _REQUESTS.get(key, []) if now - t < 3600]
+    if len(window) >= settings.rate_limit_per_hour:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Rate limit reached ({settings.rate_limit_per_hour}/hour). "
+                   "Each question runs a language model on a personal machine.",
+        )
+    window.append(now)
+    _REQUESTS[key] = window
+
 
 # Cheap in-process cache so a page reload does not re-scrape NSE and RBI.
 _CACHE: dict[str, tuple[float, Any]] = {}
@@ -389,6 +464,7 @@ def health() -> dict:
         "models": models[:12],
         "distinct_model_families": len({m.split(":")[0].split("/")[-1] for m in models}),
         "council_available": usable,
+        "requires_key": bool(settings.access_token),
         # Data and risk answers never need a model, so the app is useful even
         # when inference is unavailable.
         "data_routes_available": True,
@@ -396,7 +472,8 @@ def health() -> dict:
 
 
 @app.get("/api/evidence")
-def evidence(scope: str = "india") -> dict:
+def evidence(request: Request, scope: str = "india",
+             x_vyuha_key: str | None = Header(None)) -> dict:
     p = build_evidence(include_global=scope in ("global", "all"))
     return {
         "as_of": p.as_of.isoformat(),
@@ -445,14 +522,16 @@ def sources() -> dict:
 
 
 @app.post("/api/ask")
-async def ask(req: AskRequest) -> JSONResponse:
+async def ask(req: AskRequest, request: Request,
+              x_vyuha_key: str | None = Header(None)) -> JSONResponse:
     """Non-streaming ask. Use /api/ask/stream for progress."""
     result = await asyncio.to_thread(_run_ask, req)
     return JSONResponse(result)
 
 
 @app.post("/api/ask/stream")
-async def ask_stream(req: AskRequest) -> StreamingResponse:
+async def ask_stream(req: AskRequest, request: Request,
+                     x_vyuha_key: str | None = Header(None)) -> StreamingResponse:
     """Server-sent events, so the user sees members answering as they finish."""
 
     async def gen():

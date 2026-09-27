@@ -38,6 +38,15 @@ class Settings(BaseSettings):
     data_gov_in_key: str | None = None
     fred_api_key: str | None = None
 
+    # --- access control ---
+    # When set, the expensive routes require this token. Empty means open,
+    # which is the right default for a laptop and the wrong one for a public
+    # URL. Set VYUHA_ACCESS_TOKEN in the environment; never commit it.
+    access_token: str = ""
+    # Even with a token, cap how often inference can be triggered. A leaked
+    # link should cost you a slow afternoon, not an unbounded compute bill.
+    rate_limit_per_hour: int = 60
+
     # --- council / inference ---
     # "auto" prefers a local Ollama and falls back to a hosted endpoint, which
     # is what lets the same code run on a laptop and on a 512MB cloud dyno.

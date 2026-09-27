@@ -8,8 +8,13 @@ WEBSITE
 
   https://haven.taila6d3cb.ts.net/vyuha
 
-  Open it in any browser, on a phone or a computer. Nothing to install, no
-  account, no login.
+  Open it in any browser, on a phone or a computer. Nothing to install and no
+  account needed.
+
+  The link you were given includes a "?key=..." part. Open it once WITH that
+  part and the key is remembered on that device; afterwards the plain address
+  works. Without it, you can still see the page but not ask questions - every
+  question runs an AI model on a personal machine, so access is limited.
 
   Note: the site runs on a personal Mac. If that machine is asleep or offline,
   the page will not load. It is not a hosted commercial service.

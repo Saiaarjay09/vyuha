@@ -1,6 +1,7 @@
 # Vyuha
 
-**Live: https://haven.taila6d3cb.ts.net/vyuha** — plain-English usage guide in
+**Live: https://haven.taila6d3cb.ts.net/vyuha** (needs an access key — ask me
+for the link with its `?key=`) — plain-English usage guide in
 [HOW_TO_USE.txt](HOW_TO_USE.txt). (The site runs on a personal machine; if it is
 asleep, the page will not load.)
 

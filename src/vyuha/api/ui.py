@@ -183,6 +183,24 @@ button.go:disabled{opacity:.35;cursor:not-allowed}
 
 <script>
 const BASE=location.pathname.replace(/\/+$/,''), api=p=>BASE+p;
+
+// Access key. Arrives once as ?key=... in a shared link, then persists so the
+// person need not keep the query string. It is stripped from the address bar
+// immediately: a key sitting in the URL ends up in history, in screenshots and
+// in anything the page later links out to.
+let KEY='';
+try{
+  const u=new URL(location.href);
+  const fromUrl=u.searchParams.get('key');
+  if(fromUrl){
+    localStorage.setItem('vyuha_key',fromUrl);
+    u.searchParams.delete('key');
+    history.replaceState({},'',u.pathname+u.search+u.hash);
+  }
+  KEY=localStorage.getItem('vyuha_key')||'';
+}catch(e){ /* private mode: fall back to a key-less session */ }
+
+const authHeaders=()=>KEY?{'X-Vyuha-Key':KEY}:{};
 const log=document.getElementById('log'), form=document.getElementById('f'),
       qEl=document.getElementById('q'), go=document.getElementById('go'),
       statEl=document.getElementById('stat');
@@ -434,7 +452,8 @@ function renderNoData(d){
 }
 
 async function health(){
-  try{const d=await(await fetch(api('/api/health'))).json();
+  try{const d=await(await fetch(api('/api/health'),{headers:authHeaders()})).json();
+    if(d.requires_key && !KEY) statEl.title='This instance needs an access key.';
     statEl.textContent = !d.council_available ? 'data only'
       : d.distinct_model_families<2 ? '1 model'
       : `${d.models.length} models`;
@@ -476,8 +495,10 @@ async function submit(text){
   let prelim=null;
   try{
     const r=await fetch(api('/api/ask/stream'),{method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json',...authHeaders()},
       body:JSON.stringify({question:text,rounds:2,horizon_days:30})});
+    if(r.status===401){ throw new Error('__NOKEY__'); }
+    if(r.status===429){ throw new Error('__RATE__'); }
     if(!r.ok)throw new Error('Server error '+r.status);
     const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
     while(true){
@@ -527,6 +548,21 @@ async function submit(text){
       }
     }
   }catch(e){
+    if(e.message==='__NOKEY__'){
+      pending.className='err';
+      pending.innerHTML=`<b>This instance needs an access key.</b><br><br>
+        It runs on a personal machine, so questions are limited to people with
+        the link's key. Open the URL you were given including its
+        <code>?key=…</code> part, and it will be remembered on this device.`;
+      return;
+    }
+    if(e.message==='__RATE__'){
+      pending.className='err';
+      pending.innerHTML=`<b>Too many questions for now.</b><br><br>
+        Each one runs a language model on a personal machine, so there is an
+        hourly cap. Try again shortly.`;
+      return;
+    }
     // fetch() reports a blocked request and an unreachable server identically
     // as "Failed to fetch", so the message has to cover both rather than
     // guessing. A content blocker is by far the commonest cause when the page
