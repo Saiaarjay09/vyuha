@@ -276,11 +276,68 @@ def parse_projection(text: str) -> dict | None:
     return {"amount": amount, "years": years, "asset": asset, "mode": mode}
 
 
+# --- portfolio / goal / fund -------------------------------------------------
+_PORTFOLIO_PAT = re.compile(
+    r"\b(my portfolio|i (?:have|hold|own)|holdings?|i'?m invested|invested in)\b", re.I)
+_GOAL_PAT = re.compile(
+    r"\b(i (?:want|need)|goal|target|retire|save up|accumulate|reach)\b.{0,60}"
+    r"(?:in|within|by|over)\s*[\d.]+\s*(?:year|yr)", re.I)
+_FUND_PAT = re.compile(
+    r"\b(fund|nav|amc|sip in|scheme)\b", re.I)
+
+
+def parse_goal(text: str) -> dict | None:
+    """Pull a target amount and horizon out of 'I want 1 crore in 15 years'."""
+    ym = _YEARS_PAT.search(text.lower())
+    if not ym:
+        return None
+    n = float(ym.group(1))
+    years = n / 12 if ym.group(2).lower().startswith("mo") else n
+    if not 0 < years <= 50:
+        return None
+    target = None
+    for m in _AMOUNT_PAT.finditer(text.lower()):
+        raw, unit = m.group(1), (m.group(2) or "").lower()
+        if m.start() == ym.start():
+            continue
+        try:
+            val = float(raw.replace(",", "")) * _MULT.get(unit, 1.0)
+        except ValueError:
+            continue
+        if val >= 10_000:
+            target = val
+            break
+    if target is None:
+        return None
+    asset = "indian_equity"
+    low = text.lower()
+    for key, words in _ASSET_WORDS:
+        if any(w in low for w in words):
+            asset = key
+            break
+    return {"target": target, "years": years, "asset": asset}
+
+
 _FORECAST_PAT = re.compile(r"\b(will|would|probability|odds|chance|likely|forecast|"
                            r"expect|predict|by (?:next|the end)|before)\b", re.I)
 
 
 def classify(text: str) -> str:
+    # A goal ("I want 1 crore in 15 years") and a projection ("5 lakh for 15
+    # years") both carry an amount and a horizon. The difference is which end
+    # is known: a goal names the destination, a projection names the stake.
+    if _GOAL_PAT.search(text) and parse_goal(text):
+        return "goal"
+    if _PORTFOLIO_PAT.search(text):
+        from vyuha.portfolio import parse_holdings
+
+        if len(parse_holdings(text)) >= 1:
+            return "portfolio"
+    if _FUND_PAT.search(text) and not _FORECAST_PAT.search(text):
+        if re.search(r"\b(nav|which fund|find.*fund|search.*fund|fund called"
+                     r"|my fund|about .{2,40} fund)\b", text, re.I):
+            return "fund"
+
     # An amount plus a horizon plus a named asset is already an unambiguous
     # projection request ("50,000 in a fixed deposit for 10 years"), with or
     # without a verb like "invest". But "will the Nifty fall below 22,900 in
@@ -611,6 +668,12 @@ def _run_ask(req: AskRequest, emit=None) -> dict:
 
     if kind == "data":
         return _answer_data(req.question, emit)
+    if kind == "goal":
+        return _answer_goal(req.question, emit)
+    if kind == "portfolio":
+        return _answer_portfolio(req.question, emit)
+    if kind == "fund":
+        return _answer_fund(req.question, emit)
     if kind == "projection":
         return _answer_projection(req.question, emit)
     if kind == "risk":
@@ -640,6 +703,45 @@ def _answer_data(question: str, emit=None) -> dict:
         "caveats": p.caveats,
         "note": "Direct lookup from live sources. No model involved, nothing inferred.",
     }
+
+
+def _answer_goal(question: str, emit=None) -> dict:
+    from vyuha.projection import plan_goal
+
+    spec = parse_goal(question)
+    if spec is None:
+        return {"route": "projection_unparsed",
+                "message": "Tell me the amount and the timeframe, e.g. "
+                           "'I want 1 crore in 15 years'."}
+    if emit:
+        emit("status", {"stage": "simulating outcomes"})
+    g = plan_goal(**spec)
+    return {"route": "goal", **g.to_dict()}
+
+
+def _answer_portfolio(question: str, emit=None) -> dict:
+    from vyuha.portfolio import analyse_text
+
+    if emit:
+        emit("status", {"stage": "analysing holdings"})
+    a = analyse_text(question)
+    if not a.holdings:
+        return {"route": "projection_unparsed",
+                "message": "List what you hold and roughly how much, e.g. "
+                           "'I have 5 lakh in HDFC Bank and 3 lakh in gold'."}
+    return {"route": "portfolio", **a.to_dict()}
+
+
+def _answer_fund(question: str, emit=None) -> dict:
+    from vyuha.funds import search
+
+    if emit:
+        emit("status", {"stage": "searching schemes"})
+    cleaned = re.sub(
+        r"\b(what|is|the|nav|of|show|me|find|my|about|tell|search|for|a|an)\b",
+        " ", question, flags=re.I)
+    r = search(cleaned.strip() or question)
+    return {"route": "fund", **r.to_dict()}
 
 
 def _answer_projection(question: str, emit=None) -> dict:

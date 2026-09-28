@@ -374,6 +374,101 @@ def project(
     return res
 
 
+@dataclass(slots=True)
+class GoalResult:
+    target: float
+    years: float
+    asset: str
+    asset_label: str
+    monthly_required: float
+    lumpsum_required: float
+    probability_of_reaching: float
+    monthly_for_80pct: float
+    total_contributed: float
+    target_in_todays_money: float
+    inflation_assumed: float
+    caveats: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {k: getattr(self, k) for k in self.__slots__}
+
+
+def plan_goal(
+    target: float, years: float, asset: str = "indian_equity",
+    n_sims: int = 8000, inflation: float | None = None, seed: int = 4242,
+) -> GoalResult:
+    """How much to save monthly to have a decent shot at a target.
+
+    The naive calculation -- compound the median return backwards -- answers
+    "what monthly amount reaches the target if everything goes averagely?"
+    That has roughly a 50% chance of working, which is a poor basis for a
+    plan you cannot redo.
+
+    So two numbers are returned: the monthly amount whose MEDIAN outcome hits
+    the target, and the larger amount that reaches it in 80% of simulated
+    histories. The gap between them is the price of confidence, and it is
+    usually startling.
+
+    The target is also restated in today's money. A crore in fifteen years is
+    not a crore -- at 5.5% inflation it buys what about 45 lakh buys now, and
+    a plan that ignores that is planning for the wrong number.
+    """
+    if target <= 0:
+        raise ValueError("target must be positive")
+    if years <= 0 or years > 50:
+        raise ValueError("years must be between 0 and 50")
+
+    n_months = max(1, int(round(years * 12)))
+    infl = india_inflation() if inflation is None else inflation
+    rng = np.random.default_rng(seed)
+
+    if asset in FIXED_RATE_ASSETS:
+        spec = FIXED_RATE_ASSETS[asset]
+        r = float(spec["rate"])
+        monthly_mu = (1 + r) ** (1 / 12) - 1
+        paths = rng.normal(monthly_mu, spec["vol"] / np.sqrt(12),
+                           size=(n_sims, n_months))
+        label = spec["label"]
+        source_note = spec["note"]
+    else:
+        rets, meta = monthly_returns(asset)
+        paths = block_bootstrap(rets.to_numpy(), n_months, n_sims, rng=rng)
+        label = meta["label"]
+        source_note = meta["source"]
+
+    # Terminal value per rupee of monthly contribution, for every path.
+    cum = np.cumprod(1.0 + paths, axis=1)
+    per_rupee = (cum[:, -1][:, None] / cum).sum(axis=1)
+    lump_factor = cum[:, -1]
+
+    median_monthly = float(target / np.median(per_rupee))
+    p80_monthly = float(target / np.percentile(per_rupee, 20))  # 80% of paths exceed
+    prob = float((median_monthly * per_rupee >= target).mean())
+
+    res = GoalResult(
+        target=target, years=years, asset=asset, asset_label=label,
+        monthly_required=median_monthly,
+        lumpsum_required=float(target / np.median(lump_factor)),
+        probability_of_reaching=prob,
+        monthly_for_80pct=p80_monthly,
+        total_contributed=median_monthly * n_months,
+        target_in_todays_money=float(target / ((1 + infl) ** years)),
+        inflation_assumed=infl,
+        caveats=[
+            source_note,
+            f"Rs {target:,.0f} in {years:g} years buys what about "
+            f"Rs {target / ((1 + infl) ** years):,.0f} buys today, at "
+            f"{infl:.1%} inflation. Consider targeting the inflated figure.",
+            f"Saving Rs {median_monthly:,.0f} a month reaches the target in "
+            f"about half of simulated histories. Rs {p80_monthly:,.0f} reaches "
+            "it in four out of five. The difference is what certainty costs.",
+            "Built by resampling history, which assumes the coming years "
+            "resemble some past stretch. Not advice.",
+        ],
+    )
+    return res
+
+
 def compare_assets(
     amount: float, years: float, assets: list[str] | None = None, **kw: Any
 ) -> pd.DataFrame:

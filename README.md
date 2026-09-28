@@ -303,6 +303,34 @@ every other site on that port.
 
 ---
 
+## For an ordinary investor
+
+Three things that need no jargon:
+
+**Your actual portfolio.** Tell it what you hold in plain English and it runs
+your allocation through the risk engine — concentration, what past Indian
+crises would have cost you, how fast you could sell.
+
+> *"I have ₹8 lakh in HDFC Bank, ₹5 lakh in Reliance and ₹3 lakh in gold"*
+> → ₹16,00,000 across 3 holdings. Biggest single holding **50%** of the total.
+> Typical yearly swing **±15%**. The Global Financial Crisis would have cost
+> you **−42%**, about ₹6,71,000.
+
+**A goal, worked backwards.** *"I want ₹1 crore in 15 years"* →
+
+| | |
+|---|---|
+| Monthly, ~50% chance | ₹24,571 |
+| **Monthly, ~80% chance** | **₹40,066** |
+| ₹1 crore then, in today's money | ₹49,00,331 |
+
+That 63% gap is the price of confidence, and ordinary SIP calculators never
+show it — they quote the median and call it a plan.
+
+**Any of 14,400 mutual funds.** *"NAV of Parag Parikh Flexi Cap"* → ₹89.96
+Direct/Growth versus ₹81.93 Regular. Same fund; the difference is distributor
+commission compounding.
+
 ## Projecting an investment
 
 ```bash

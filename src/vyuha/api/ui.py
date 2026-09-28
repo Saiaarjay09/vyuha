@@ -452,6 +452,88 @@ function renderProjection(d){
   return h;
 }
 
+function renderGoal(d){
+  const gap=d.monthly_for_80pct/d.monthly_required;
+  return `<article>
+    <p class="verdict" style="font-size:34px">${rs(d.monthly_required)}<span style="font-size:18px;color:var(--muted);font-weight:400"> / month</span></p>
+    <p class="pline">for a roughly even chance · ${esc(d.asset_label)}</p>
+    <p class="standfirst">To reach <b>${rs(d.target)}</b> in ${d.years} years,
+    saving <b>${rs(d.monthly_required)}</b> a month gets you there in about half
+    of simulated histories. For a <b>four-in-five</b> chance you would need
+    <b>${rs(d.monthly_for_80pct)}</b> — ${((gap-1)*100).toFixed(0)}% more. That
+    difference is what certainty costs, and most calculators never show it.
+    A lump sum today of <b>${rs(d.lumpsum_required)}</b> would do the same job.</p>
+    <div class="caution"><b>${rs(d.target)} then is not ${rs(d.target)} now.</b>
+      At ${(d.inflation_assumed*100).toFixed(1)}% inflation it will buy what about
+      <b>${rs(d.target_in_todays_money)}</b> buys today. If your goal is defined in
+      today's money, aim higher.</div>
+    <div class="sections"><div class="sec"><h3><span class="n">01</span> The plan</h3><table>
+      <tr><td>Monthly, ~50% chance</td><td>${rs(d.monthly_required)}</td></tr>
+      <tr><td><b>Monthly, ~80% chance</b></td><td><b>${rs(d.monthly_for_80pct)}</b></td></tr>
+      <tr><td>Or a lump sum today</td><td>${rs(d.lumpsum_required)}</td></tr>
+      <tr><td>Total you would contribute</td><td>${rs(d.total_contributed)}</td></tr>
+      <tr><td>Target, in today's money</td><td>${rs(d.target_in_todays_money)}</td></tr>
+    </table></div></div>
+    <p class="foot">${(d.caveats||[]).map(esc).join('<br>')}</p></article>`;
+}
+
+function renderPortfolio(d){
+  const bad=d.stress[0];
+  const slow=d.liquidity.filter(l=>l.days>1);
+  let h=`<article>
+    <p class="verdict" style="font-size:32px">${rs(d.total)}</p>
+    <p class="pline">across ${d.holdings.length} holdings · effective spread ${d.concentration.effective_n?.toFixed(1)} ways</p>
+    <p class="standfirst">Your biggest single holding is
+    <b>${(d.concentration.top1_pct*100).toFixed(0)}%</b> of the total, and the top
+    five are <b>${(d.concentration.top5_pct*100).toFixed(0)}%</b>. Typical yearly
+    swing is around <b>±${(d.annual_vol*100).toFixed(0)}%</b>, so a normal year
+    could plausibly land anywhere between <b>${rs(d.one_year_range[0])}</b> and
+    <b>${rs(d.one_year_range[1])}</b>. The worst scenario in Indian market history
+    — ${esc(bad.name)} — would have cost you
+    <b>${(bad.loss_pct*100).toFixed(0)}%</b>, about ${rs(Math.abs(bad.loss))}.</p>`;
+
+  h+=`<div class="sections">`;
+  h+=`<div class="sec"><h3><span class="n">01</span> What you hold</h3><table>`;
+  for(const x of d.holdings)
+    h+=`<tr><td>${esc(x.name)} <span style="color:var(--faint)">· ${esc(x.label)}${x.guessed?' (assumed)':''}</span></td><td>${rs(x.value)}</td></tr>`;
+  h+=`</table></div>`;
+
+  h+=`<div class="sec"><h3><span class="n">02</span> If history repeated</h3><table>`;
+  for(const s2 of d.stress.slice(0,6)){
+    const c=s2.loss_pct<-0.3?'var(--yes)':s2.loss_pct<-0.1?'var(--mid)':'var(--ink)';
+    h+=`<tr><td>${esc(s2.name)} <span style="color:var(--faint)">${esc(s2.period)}</span></td>
+        <td style="color:${c}">${(s2.loss_pct*100).toFixed(0)}% · ${rs(Math.abs(s2.loss))}</td></tr>`;
+  }
+  h+=`</table><p class="rl" style="margin-top:12px">${esc(d.stress[0].lesson)}</p></div>`;
+
+  if(slow.length){
+    h+=`<div class="sec"><h3><span class="n">03</span> How fast you could get out</h3><table>`;
+    for(const l of slow.slice(0,6))
+      h+=`<tr><td>${esc(l.name)}</td><td>${l.days.toFixed(1)} days</td></tr>`;
+    h+=`</table><p class="rl" style="margin-top:12px">At 15% of typical daily
+        volume. In a crash volume dries up and these get longer.</p></div>`;
+  }
+  return h+`</div><p class="foot">${(d.caveats||[]).map(esc).join('<br>')}</p></article>`;
+}
+
+function renderFund(d){
+  if(!d.matches.length)
+    return `<article><p class="verdict" style="font-size:28px">No match</p>
+      <p class="standfirst">${esc((d.caveats||[])[0]||'Nothing found.')}</p></article>`;
+  const top=d.matches[0];
+  let h=`<article>
+    <p class="verdict" style="font-size:32px">₹${top.nav.toFixed(2)}</p>
+    <p class="pline">${esc(top.name)} · ${esc(top.plan)} ${esc(top.option)}</p>
+    <p class="standfirst">Run by <b>${esc(top.amc)}</b>, NAV as of ${esc(top.date)}.
+    There are <b>${d.category_peers}</b> other schemes in the same category, out of
+    <b>${d.total_schemes.toLocaleString('en-IN')}</b> in India.</p>
+    <div class="sections"><div class="sec"><h3><span class="n">01</span> Matching schemes</h3><table>`;
+  for(const m of d.matches)
+    h+=`<tr><td>${esc(m.plan)} · ${esc(m.option)}</td><td>₹${m.nav.toFixed(2)}</td></tr>`;
+  h+=`</table></div></div>`;
+  return h+`<p class="foot">${(d.caveats||[]).map(esc).join('<br>')}</p></article>`;
+}
+
 function renderNoModel(d){
   return `<article><p class="verdict" style="font-size:30px;color:var(--mid)">No advisors available</p>
     <p class="standfirst">${esc(d.message)}</p>
@@ -482,10 +564,11 @@ async function health(){
   }
 }
 
-const EXAMPLES=['If I invest ₹5 lakh in equity for 7 years, what might I get?',
-  '₹10,000 monthly SIP in Nifty for 15 years',
-  'Will the Nifty 50 fall below 22,900 in the next 30 days?',
-  'What is the price of gold right now?'];
+const EXAMPLES=['I have ₹8 lakh in HDFC Bank, ₹5 lakh in Reliance and ₹3 lakh in gold',
+  'I want ₹1 crore in 15 years',
+  'If I invest ₹5 lakh in equity for 7 years, what might I get?',
+  'What is the NAV of Parag Parikh Flexi Cap fund?',
+  'Will the Nifty 50 fall below 22,900 in the next 30 days?'];
 
 function intro(){
   return `<div class="intro">
@@ -535,6 +618,8 @@ async function submit(text){
             'fetching live data':'Gathering live market data',
             'checking data coverage':'Checking what data exists',
             'simulating outcomes':'Simulating 20,000 possible futures',
+            'analysing holdings':'Running your holdings through the risk engine',
+            'searching schemes':'Searching 14,000 mutual fund schemes',
             'running stress scenarios':'Replaying past crises'}[d.stage]||d.stage;
           if(!prelim)pending.querySelector('.load').textContent=t;
         }else if(ev==='member'){
@@ -560,6 +645,9 @@ async function submit(text){
              :d.route==='no_data'?renderNoData(d)
              :d.route==='no_model'?renderNoModel(d)
              :d.route==='projection'?renderProjection(d)
+             :d.route==='goal'?renderGoal(d)
+             :d.route==='portfolio'?renderPortfolio(d)
+             :d.route==='fund'?renderFund(d)
              :d.route==='projection_unparsed'?renderNoData({message:d.message,catalogued:[]})
              :renderRisk(d));
         }
