@@ -323,6 +323,24 @@ function renderCouncil(d,preliminary){
     h+=`<div class="sec"><h3><span class="n">${String(++n).padStart(2,'0')}</span> The case against</h3>
         <blockquote>${esc(d.counterargument)}</blockquote></div>`;
   }
+  if(d.context?.length){
+    h+=`<div class="sec"><h3><span class="n">${String(++n).padStart(2,'0')}</span> Headlines they saw</h3>`;
+    for(const c of d.context){
+      const age=c.age_hours==null?'undated':`${Math.round(c.age_hours)}h ago`;
+      const badge=c.tier==='primary'
+        ? '<span style="color:var(--no);font-weight:600">official</span>'
+        : '<span style="color:var(--faint)">press</span>';
+      h+=`<div class="adv"><span class="p" style="font-size:12px;color:var(--faint)">${esc(c.id)}</span>
+          <span><span class="nm" style="font-weight:500">${esc(c.title)}</span>
+          <div class="rl">${badge} · ${esc(c.source)} · ${age}${c.flags&&c.flags.length?` · <span style="color:var(--mid)">sanitised: ${esc(c.flags.join(', '))}</span>`:''}</div></span></div>`;
+    }
+    h+=`<p class="rl" style="margin-top:12px">Recent headlines, filtered from
+        ~100 retrieved items. <b>These are untrusted third-party text</b> — a
+        report of what someone published, not established fact. Advisors are
+        instructed to weigh them well below the figures, and any text trying to
+        instruct them is stripped and flagged.</p></div>`;
+  }
+
   if(d.evidence?.length){
     h+=`<div class="sec"><h3><span class="n">${String(++n).padStart(2,'0')}</span> The evidence</h3><table>`;
     for(const e of d.evidence) h+=`<tr><td>${esc(nice(e.label))}</td><td>${fmt(e.value)}</td></tr>`;

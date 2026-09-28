@@ -38,6 +38,14 @@ class Settings(BaseSettings):
     data_gov_in_key: str | None = None
     fred_api_key: str | None = None
 
+    # --- retrieval ---
+    # Retrieval adds ~10s and can make forecasts WORSE if unfiltered: a model
+    # given fifty articles attends to them less carefully than one given
+    # three. Kept deliberately small, and easy to turn off.
+    retrieval_enabled: bool = True
+    retrieval_keep: int = 5
+    retrieval_max_age_hours: float = 72.0
+
     # --- access control ---
     # When set, the expensive routes require this token. Empty means open,
     # which is the right default for a laptop and the wrong one for a public
