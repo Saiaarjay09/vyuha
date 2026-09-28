@@ -29,6 +29,11 @@ cat > "$PLIST" <<PLIST_EOF
   <key>ProgramArguments</key>
   <array>
     <string>${ROOT}/.venv/bin/python</string>
+    <!-- -u is not optional here. Python buffers stdout when it is not a
+         terminal, so an unattended run writes nothing to its log until it
+         exits -- which makes a job that takes several minutes impossible to
+         watch or debug while it is the thing you most want to watch. -->
+    <string>-u</string>
     <string>${ROOT}/scripts/daily_learn.py</string>
     <string>--all</string>
   </array>

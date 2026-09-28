@@ -204,6 +204,52 @@ automatically.
 - **data.gov.in's shared demo key is quota-limited.** Set
   `DATA_GOV_IN_KEY` as a repository secret for reliable discovery.
 
+## Where it stands
+
+```bash
+vyuha scoreboard
+```
+
+There is no leaderboard for Indian market forecasting. Aladdin publishes no
+accuracy figures, brokerages publish selected calls, and no public benchmark
+for this market exists. So the scoreboard reports the measured score against
+**published reference points**, every one marked `comparable: false`:
+
+| Reference | Brier | Source |
+|---|---|---|
+| Always saying 50% | 0.250 | arithmetic — the floor |
+| Human crowd | 0.149 | Halawi et al. 2024 |
+| o3, direct prediction | 0.135 | arXiv 2507.04562 |
+| Metaculus community | 0.126 | Metaculus track record |
+| Metaculus ensemble | 0.107 | Metaculus FAQ |
+| Superforecaster median | 0.100 | ForecastBench |
+
+**These are not a ladder Vyuha can climb.** Brier scores are not comparable
+across question sets — the forecasting literature says so explicitly, and those
+figures are on geopolitical and general-knowledge questions, not markets.
+Vyuha's questions are self-posed, short-horizon and probably easier.
+
+Two things *are* comparable and both are reported:
+
+- **Skill vs base rate** (`1 − BS/BS_base`), which normalises for how
+  predictable the questions were. A forecaster that cannot beat the base rate
+  has added nothing, whatever its raw Brier.
+- **Head-to-head against the option-implied probability**, which answers the
+  same question at the same moment. The only strictly fair comparison, and a
+  hard one.
+
+## A bug that had been poisoning the data
+
+Running the test suite wrote `EchoProvider` stub forecasts into the real
+`council_runs/` directory. **88 of 126 logged runs turned out to be test
+artifacts** — stubs answering "Will X happen?" with a fixed 0.42.
+
+`resolve_due` cannot distinguish them from genuine forecasts, so they would
+have been scored and folded into the pooling weights governing every real
+answer. A test run was quietly teaching the council that a stub is a
+forecaster. `tests/conftest.py` now redirects every writable path to a
+temporary directory, and a test asserts it.
+
 ## What this still cannot do
 
 It cannot establish causation. A validated candidate is *a correlation that

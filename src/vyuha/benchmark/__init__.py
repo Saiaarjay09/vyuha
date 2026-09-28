@@ -5,6 +5,8 @@ from vyuha.benchmark.implied import (
     implied_from_chain,
     implied_probability_below,
 )
+from vyuha.benchmark.scoreboard import REFERENCES, Standing, render, standing
 
 __all__ = ["implied_from_chain", "implied_probability_below", "implied_cdf",
-           "ImpliedDistribution", "score_against_market", "BenchmarkResult"]
+           "ImpliedDistribution", "score_against_market", "BenchmarkResult",
+           "standing", "render", "Standing", "REFERENCES"]

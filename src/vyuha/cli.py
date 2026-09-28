@@ -335,6 +335,22 @@ def coverage() -> None:
 
 
 @app.command()
+def scoreboard() -> None:
+    """Where Vyuha stands, with every caveat attached.
+
+    There is no leaderboard for Indian market forecasting. This shows the
+    measured score against published reference points, and states plainly
+    that they are on different question sets and are not a ranking.
+    """
+    from vyuha.benchmark.scoreboard import render, standing
+    from vyuha.config import settings as _s
+    from vyuha.council.scoring import TrackRecord
+
+    console.print(render(standing(
+        TrackRecord(_s.council_log_dir / "track_record.jsonl"))))
+
+
+@app.command()
 def benchmark(
     symbol: str = typer.Option("NIFTY", help="Index to read the option chain for."),
     level: float = typer.Option(None, help="Strike level for the probability question."),

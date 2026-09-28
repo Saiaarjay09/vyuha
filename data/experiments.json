@@ -1,0 +1,26 @@
+{
+  "q_20260929_cc78bf30b6b0": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-28T17:34:43.613467+00:00"
+  },
+  "q_20261001_23e4f4c4f56a": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 4,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-28T17:39:02.484939+00:00"
+  },
+  "q_20261005_83f9da2e14b6": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-28T17:39:56.742180+00:00"
+  }
+}

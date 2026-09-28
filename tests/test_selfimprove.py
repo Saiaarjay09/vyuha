@@ -237,3 +237,27 @@ def test_only_significant_winners_are_applied(tmp_path):
 
 def test_min_per_arm_is_not_trivially_small():
     assert MIN_PER_ARM >= 25
+
+
+def test_tests_do_not_write_into_real_state():
+    """Guard against a regression that poisoned the learning data.
+
+    Before conftest.py isolated it, running the suite wrote EchoProvider stub
+    forecasts into the real council_runs/ directory -- 88 of 126 logged runs
+    turned out to be test artifacts. `resolve_due` cannot distinguish them from
+    genuine forecasts, so they would have been scored and used to derive the
+    pooling weights governing every real answer.
+    """
+    from vyuha.config import settings
+
+    for path in (settings.council_log_dir, settings.data_dir, settings.cache_dir):
+        assert "pytest" in str(path) or "tmp" in str(path).lower(), (
+            f"{path} is not a temporary directory; the suite would write to real state"
+        )
+
+
+def test_council_log_dir_is_writable_and_empty_per_test():
+    from vyuha.config import settings
+
+    assert settings.council_log_dir.exists()
+    assert not list(settings.council_log_dir.glob("*.json"))
