@@ -102,3 +102,24 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def apply_tuned_settings() -> dict:
+    """Overlay settings the learning loop has earned through measurement.
+
+    Read from a JSON file rather than baked into code, so the changes are
+    visible, diffable, and revertible by deleting one file. Only keys the
+    experiment module is allowed to vary are applied; anything else in the
+    file is ignored.
+    """
+    try:
+        from vyuha.learn.experiment import load_tuned
+    except Exception:  # noqa: BLE001 - config must import without learn/
+        return {}
+
+    applied = {}
+    for key, value in load_tuned().items():
+        if hasattr(settings, key):
+            setattr(settings, key, value)
+            applied[key] = value
+    return applied

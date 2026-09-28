@@ -12,6 +12,10 @@ build/
 htmlcov/
 data/cache/**
 data/*.duckdb
+# Learning state IS tracked: it is the evidence the loop accumulates.
+!data/question_queue.json
+!data/experiments.json
+!data/tuned_settings.json
 data/*.parquet
 !data/cache/.gitkeep
 .env

@@ -34,6 +34,13 @@ def _print(title: str) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser(description="Vyuha daily learning cycle")
     ap.add_argument("--all", action="store_true", help="every stage")
+    ap.add_argument("--snapshot", action="store_true",
+                    help="record today's market state (REQUIRED for resolution)")
+    ap.add_argument("--generate", action="store_true",
+                    help="pose new short-horizon questions to the council")
+    ap.add_argument("--answer", action="store_true",
+                    help="have the council answer pending generated questions "
+                         "(needs a local model)")
     ap.add_argument("--resolve", action="store_true", help="resolve due questions")
     ap.add_argument("--retune", action="store_true", help="re-derive weights and bias")
     ap.add_argument("--discover", action="store_true", help="find new candidates")
@@ -44,8 +51,10 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.all:
+        args.snapshot = args.generate = args.answer = True
         args.resolve = args.retune = args.discover = args.validate = True
-    if not any((args.resolve, args.retune, args.discover, args.validate)):
+    if not any((args.snapshot, args.generate, args.answer, args.resolve,
+                args.retune, args.discover, args.validate)):
         ap.error("choose at least one stage, or --all")
 
     report: dict = {
@@ -53,6 +62,41 @@ def main() -> int:
         "date": str(dt.date.today()),
         "stages": {},
     }
+
+    # --------------------------------------------------------- snapshot
+    if args.snapshot:
+        _print("0. RECORDING TODAY'S MARKET STATE")
+        from vyuha.learn.snapshot import snapshot_today
+
+        try:
+            s = snapshot_today()
+            print(f"  {s.summary()}")
+            for e in s.errors:
+                print(f"  error: {e[:130]}")
+            report["stages"]["snapshot"] = {
+                "written": s.written, "series": s.series, "errors": s.errors,
+            }
+        except Exception as exc:  # noqa: BLE001
+            print(f"  FAILED: {type(exc).__name__}: {exc}")
+            report["stages"]["snapshot"] = {"error": str(exc)}
+
+    # --------------------------------------------------------- generate
+    if args.generate:
+        _print("0b. POSING NEW QUESTIONS")
+        try:
+            report["stages"]["generate"] = generate_and_store()
+        except Exception as exc:  # noqa: BLE001
+            print(f"  FAILED: {type(exc).__name__}: {exc}")
+            report["stages"]["generate"] = {"error": str(exc)}
+
+    # ----------------------------------------------------------- answer
+    if args.answer:
+        _print("0c. ANSWERING PENDING QUESTIONS")
+        try:
+            report["stages"]["answer"] = answer_pending()
+        except Exception as exc:  # noqa: BLE001
+            print(f"  FAILED: {type(exc).__name__}: {exc}")
+            report["stages"]["answer"] = {"error": str(exc)}
 
     # ---------------------------------------------------------- resolve
     if args.resolve:
@@ -91,6 +135,29 @@ def main() -> int:
             print(f"  FAILED: {type(exc).__name__}: {exc}")
             report["stages"]["retune"] = {"error": str(exc)}
 
+    # ------------------------------------------------------- experiments
+    if args.retune:
+        _print("2b. COMPARING CONFIGURATION VARIANTS")
+        try:
+            from vyuha.council.scoring import TrackRecord
+            from vyuha.learn.experiment import analyse, apply_winners
+
+            track = TrackRecord(ROOT / "council_runs" / "track_record.jsonl")
+            results = analyse(track)
+            if not results:
+                print("  no variant assignments recorded yet")
+            for r in results:
+                print(f"  {r.setting}: {r.decision[:110]}")
+            applied = apply_winners(results)
+            if applied["applied"]:
+                print(f"  APPLIED: {applied['applied']}")
+            report["stages"]["experiments"] = {
+                "results": [r.to_dict() for r in results], **applied,
+            }
+        except Exception as exc:  # noqa: BLE001
+            print(f"  FAILED: {type(exc).__name__}: {exc}")
+            report["stages"]["experiments"] = {"error": str(exc)}
+
     # --------------------------------------------------------- discover
     if args.discover:
         _print("3. DISCOVERING CANDIDATE VARIABLES")
@@ -122,6 +189,82 @@ def main() -> int:
     out.write_text(json.dumps(report, indent=2, default=str))
     print(f"\nreport written to {out}")
     return 0
+
+
+QUEUE = ROOT / "data" / "question_queue.json"
+
+
+def generate_and_store() -> dict:
+    """Pose a fresh batch and queue it for answering."""
+    from vyuha.learn.questions import generate
+
+    r = generate()
+    existing = json.loads(QUEUE.read_text()) if QUEUE.exists() else []
+    known = {q["id"] for q in existing}
+    added = [q.model_dump(mode="json") for q in r.questions if q.id not in known]
+    QUEUE.parent.mkdir(parents=True, exist_ok=True)
+    QUEUE.write_text(json.dumps(existing + added, indent=2, default=str))
+    print(f"  {r.summary()}; {len(added)} new, {len(existing) + len(added)} queued")
+    for q in r.questions[:3]:
+        print(f"    {q.text}")
+    return {"generated": r.generated, "added": len(added),
+            "queued_total": len(existing) + len(added), "skipped": r.skipped}
+
+
+def answer_pending(limit: int = 12) -> dict:
+    """Run the council over queued questions that have no forecast yet.
+
+    Needs a local model, so this stage is skipped on a hosted runner. Each
+    answered question becomes a scored forecast once its date passes, which is
+    the entire mechanism by which the system improves without being asked to.
+    """
+    from vyuha.api.server import build_evidence
+    from vyuha.council import Council, CouncilConfig, Question, default_provider
+    from vyuha.council.providers import EchoProvider
+
+    provider = default_provider()
+    if isinstance(provider, EchoProvider):
+        print("  no local model available; skipping (CI has no Ollama)")
+        return {"answered": 0, "note": "no model"}
+
+    if not QUEUE.exists():
+        print("  nothing queued")
+        return {"answered": 0}
+
+    queued = json.loads(QUEUE.read_text())
+    answered_ids = set()
+    for f in (ROOT / "council_runs").glob("*.json"):
+        try:
+            answered_ids.add(json.loads(f.read_text())["question"]["id"])
+        except Exception:  # noqa: BLE001
+            continue
+
+    todo = [q for q in queued if q["id"] not in answered_ids][:limit]
+    if not todo:
+        print(f"  all {len(queued)} queued questions already answered")
+        return {"answered": 0, "queued": len(queued)}
+
+    from vyuha.learn.experiment import config_for, record_run
+
+    done = 0
+    for raw in todo:
+        # Each question is answered under a randomly assigned configuration,
+        # so that when it resolves the score attributes to that variant. This
+        # is how the system decides whether retrieval is worth its six seconds
+        # instead of someone asserting that it is.
+        variant = config_for(raw["id"])
+        packet = build_evidence(include_global=True,
+                                question=raw["text"] if variant["retrieval_enabled"] else None)
+        council = Council(provider=provider, config=CouncilConfig(
+            rounds=variant["rounds"], min_panel=variant["min_panel"]))
+        try:
+            council.run(Question.model_validate(raw), packet)
+            record_run(raw["id"], variant)
+            done += 1
+        except Exception as exc:  # noqa: BLE001
+            print(f"  failed on {raw['id']}: {str(exc)[:80]}")
+    print(f"  answered {done} of {len(todo)} pending ({len(queued)} queued total)")
+    return {"answered": done, "queued": len(queued)}
 
 
 def run_validation() -> dict:

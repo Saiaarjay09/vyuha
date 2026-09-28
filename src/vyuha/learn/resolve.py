@@ -231,6 +231,23 @@ def resolve_due(
 
 
 def _default_resolver(q: dict) -> tuple[bool | None, str]:
+    """Resolve a question, preferring the structured path.
+
+    Auto-generated questions carry a resolution criterion we wrote ourselves,
+    in a fixed form, so they parse reliably. Hand-written ones have to be read
+    out of free-form text, which frequently fails -- and a question that
+    cannot be resolved teaches the system nothing. That asymmetry is the main
+    argument for the council posing most of its own questions.
+    """
+    from vyuha.learn.questions import resolve_generated
+
+    outcome, note = resolve_generated(q)
+    if outcome is not None or "not an auto-generated" not in note:
+        return outcome, note
+    return _text_resolver(q)
+
+
+def _text_resolver(q: dict) -> tuple[bool | None, str]:
     """Resolve from the point-in-time store by parsing the question text.
 
     Deliberately narrow: it only handles questions of the form "... below/above

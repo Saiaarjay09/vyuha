@@ -1,18 +1,55 @@
 {
-  "run_at": "2026-09-19T04:40:56.979744+00:00",
-  "date": "2026-09-19",
+  "run_at": "2026-09-28T11:31:08.370246+00:00",
+  "date": "2026-09-28",
   "stages": {
+    "snapshot": {
+      "written": 25,
+      "series": [
+        "BANKNIFTY_CLOSE",
+        "BANK_RATE",
+        "BRENT_USD",
+        "CRR",
+        "DII_NET_CASH",
+        "DOLLAR_INDEX",
+        "EURINR",
+        "FII_FPI_NET_CASH",
+        "GBPINR",
+        "GOLD_USD",
+        "INDIA_VIX",
+        "JPYINR_100",
+        "MSF_RATE",
+        "NIFTY50_CLOSE",
+        "NIFTY_MIDCAP_CLOSE",
+        "NIFTY_NEXT50_CLOSE",
+        "REPO_RATE",
+        "REVERSE_REPO_RATE",
+        "SDF_RATE",
+        "SILVER_USD",
+        "SLR",
+        "SP500",
+        "USDINR",
+        "US_10Y",
+        "VIX"
+      ],
+      "errors": []
+    },
+    "generate": {
+      "generated": 12,
+      "added": 9,
+      "queued_total": 21,
+      "skipped": []
+    },
     "resolve": {
-      "checked": 40,
+      "checked": 115,
       "resolved": 0,
-      "still_pending": 40,
+      "still_pending": 115,
       "unresolvable": 0,
       "scored_forecasts": 0,
       "details": [],
       "errors": []
     },
     "retune": {
-      "updated_at": "2026-09-19T04:40:57.558919+00:00",
+      "updated_at": "2026-09-28T11:31:10.467603+00:00",
       "resolved_questions": 0,
       "members": 0,
       "applied": {},
@@ -22,180 +59,10 @@
         "extremise_cap": "0 resolved questions; need 50."
       }
     },
-    "discover": {
-      "checked_channels": 3,
-      "found": 8,
-      "new": 8,
-      "verified": 7,
-      "rejected": 1,
-      "errors": [],
-      "registry": {
-        "proposed": 0,
-        "verified": 7,
-        "validated": 0,
-        "promoted": 0,
-        "rejected": 1
-      }
-    },
-    "validate": {
-      "candidates": 7,
-      "tested": 6,
-      "untestable": 1,
-      "naive_significant_p05": 0,
-      "expected_by_chance": 0.3,
-      "survive_fdr": 0,
-      "survivors": [],
-      "fdr_q": 0.1,
-      "reading": "0 of 6 cleared a naive p<0.05, and chance alone would produce about 0.3. After FDR correction 0 survive.",
-      "results": [
-        {
-          "key": "fred_indcpiallminmei",
-          "n_aligned": 102,
-          "tested": true,
-          "in_sample_rho": 0.35737221877751874,
-          "oos_rho": 0.20813043747298682,
-          "oos_p": 0.20986778977699672,
-          "p_adjusted": 0.6296033693309901,
-          "survives_fdr": false,
-          "effect_size": 0.20813043747298682,
-          "direction": "positive",
-          "note": "",
-          "batch_size": 6,
-          "diagnostics": {
-            "n_train": 61,
-            "n_test": 38,
-            "purge": 3,
-            "lag": 1,
-            "sign_consistent": true,
-            "in_sample_stronger": true
-          }
-        },
-        {
-          "key": "fred_indproindmismei",
-          "n_aligned": 76,
-          "tested": true,
-          "in_sample_rho": -0.05046113306982872,
-          "oos_rho": -0.0782703886152162,
-          "oos_p": 0.6921836339404285,
-          "p_adjusted": 0.7985640155915196,
-          "survives_fdr": false,
-          "effect_size": 0.0782703886152162,
-          "direction": "negative",
-          "note": "",
-          "batch_size": 6,
-          "diagnostics": {
-            "n_train": 45,
-            "n_test": 28,
-            "purge": 3,
-            "lag": 1,
-            "sign_consistent": true,
-            "in_sample_stronger": false
-          }
-        },
-        {
-          "key": "fred_intdsrinm193n",
-          "n_aligned": 70,
-          "tested": true,
-          "in_sample_rho": 0.056796994532446875,
-          "oos_rho": -0.29253990158112453,
-          "oos_p": 0.1558756242835422,
-          "p_adjusted": 0.6296033693309901,
-          "survives_fdr": false,
-          "effect_size": 0.29253990158112453,
-          "direction": "negative",
-          "note": "",
-          "batch_size": 6,
-          "diagnostics": {
-            "n_train": 42,
-            "n_test": 25,
-            "purge": 3,
-            "lag": 1,
-            "sign_consistent": false,
-            "in_sample_stronger": false
-          }
-        },
-        {
-          "key": "fred_mktgdpina646nwdb",
-          "n_aligned": 10,
-          "tested": false,
-          "in_sample_rho": NaN,
-          "oos_rho": NaN,
-          "oos_p": NaN,
-          "p_adjusted": NaN,
-          "survives_fdr": false,
-          "effect_size": NaN,
-          "direction": "",
-          "note": "only 10 aligned observations; need 40. Most Indian macro series are monthly, so this usually means too little history.",
-          "batch_size": 6,
-          "diagnostics": {}
-        },
-        {
-          "key": "fred_rbinbis",
-          "n_aligned": 118,
-          "tested": true,
-          "in_sample_rho": -0.0515265506079958,
-          "oos_rho": -0.039130434782608685,
-          "oos_p": 0.7985640155915196,
-          "p_adjusted": 0.7985640155915196,
-          "survives_fdr": false,
-          "effect_size": 0.039130434782608685,
-          "direction": "negative",
-          "note": "",
-          "batch_size": 6,
-          "diagnostics": {
-            "n_train": 70,
-            "n_test": 45,
-            "purge": 3,
-            "lag": 1,
-            "sign_consistent": true,
-            "in_sample_stronger": true
-          }
-        },
-        {
-          "key": "fred_xtexva01inm667s",
-          "n_aligned": 117,
-          "tested": true,
-          "in_sample_rho": -0.05939987752602572,
-          "oos_rho": 0.04411557434813248,
-          "oos_p": 0.7761469843372649,
-          "p_adjusted": 0.7985640155915196,
-          "survives_fdr": false,
-          "effect_size": 0.04411557434813248,
-          "direction": "positive",
-          "note": "",
-          "batch_size": 6,
-          "diagnostics": {
-            "n_train": 70,
-            "n_test": 44,
-            "purge": 3,
-            "lag": 1,
-            "sign_consistent": false,
-            "in_sample_stronger": true
-          }
-        },
-        {
-          "key": "fred_xtimva01inm667s",
-          "n_aligned": 117,
-          "tested": true,
-          "in_sample_rho": 0.053941037529524984,
-          "oos_rho": 0.04918957011980268,
-          "oos_p": 0.7511787562784491,
-          "p_adjusted": 0.7985640155915196,
-          "survives_fdr": false,
-          "effect_size": 0.04918957011980268,
-          "direction": "positive",
-          "note": "",
-          "batch_size": 6,
-          "diagnostics": {
-            "n_train": 70,
-            "n_test": 44,
-            "purge": 3,
-            "lag": 1,
-            "sign_consistent": true,
-            "in_sample_stronger": true
-          }
-        }
-      ]
+    "experiments": {
+      "results": [],
+      "applied": {},
+      "all_tuned": {}
     }
   }
 }

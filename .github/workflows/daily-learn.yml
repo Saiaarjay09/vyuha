@@ -19,7 +19,8 @@ on:
         required: false
         default: "--all"
         type: choice
-        options: ["--all", "--resolve --retune", "--discover --validate"]
+        options: ["--all", "--snapshot --generate --resolve --retune",
+                  "--resolve --retune", "--discover --validate"]
 
 # Least privilege: enough to commit evidence and open a PR, nothing more.
 permissions:
@@ -64,7 +65,11 @@ jobs:
         # No Ollama on a hosted runner, so the LLM hypothesis channel is off.
         # Resolution, retuning, registry discovery and validation need no model.
         run: |
-          python scripts/daily_learn.py ${{ github.event.inputs.stages || '--all' }} \
+          # --answer is omitted: a hosted runner has no Ollama, and the stage
+          # skips itself anyway. Snapshot, generation, resolution, retuning,
+          # discovery and validation all run without a model.
+          python scripts/daily_learn.py ${{ github.event.inputs.stages ||
+            '--snapshot --generate --resolve --retune --discover --validate' }} \
             2>&1 | tee /tmp/learn.log
           echo "summary<<EOF" >> "$GITHUB_OUTPUT"
           tail -40 /tmp/learn.log >> "$GITHUB_OUTPUT"
@@ -89,7 +94,8 @@ jobs:
           git config user.name  "vyuha-bot"
           git config user.email "noreply@anthropic.com"
           git add -A council_runs data/candidates.json data/learning_report.json \
-                     data/cache/.gitkeep 2>/dev/null || true
+                     data/question_queue.json data/experiments.json \
+                     data/tuned_settings.json data/cache/.gitkeep 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "nothing changed"
           else

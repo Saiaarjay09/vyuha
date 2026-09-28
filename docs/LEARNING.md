@@ -108,15 +108,82 @@ It also **rejected** the India 10-year government bond yield: the endpoint
 failed to return data. That is the single series the project most wants, and
 the loop refused it rather than recording a dead URL as a source.
 
+## The loop was starving, and nothing said so
+
+Three faults compounded, each silent:
+
+**The point-in-time store was empty.** Nothing had ever been written to it. So
+`resolve_due` looked for price history, found none, marked every outcome
+unresolvable, and every member stayed equally weighted — for the project's
+entire life, without a single error.
+
+**Every question was 2–13 weeks out.** Even with data, the 25 resolved
+questions needed before weights move would have arrived some time next year.
+
+**A third of questions named `resolution_source: manual`** — unresolvable by
+construction.
+
+### The fix: the council poses its own questions
+
+Every trading day the loop now records the market into the store
+(`learn/snapshot.py`, 25 series) and generates a batch of questions about it
+(`learn/questions.py`) with **1, 3 and 7 day horizons** and machine-resolvable
+criteria. Those resolve within the week, so a usable track record accumulates
+in a fortnight instead of two quarters.
+
+The subtle part is that a generated question must be genuinely *uncertain*.
+"Will the Nifty fall below half its current level tomorrow?" resolves NO every
+time; a track record built on such questions reports spectacular accuracy that
+means nothing. Thresholds are therefore placed at 0.4, 0.8 and 1.3 standard
+deviations of the expected move over the horizon, in both directions, so the
+base rate does not drift and let a forecaster score well by always saying the
+same thing.
+
+## It tunes itself, within limits
+
+Several settings were chosen by argument rather than evidence. Does retrieval
+help or just cost six seconds? Is a four-member panel as good as ten?
+
+`learn/experiment.py` randomises them. Each question is assigned to a variant
+by hashing its id — deterministic, so re-running cannot quietly reassign a
+question to whichever arm currently looks better. When it resolves, the variant
+inherits the Brier score. After 30 questions per arm, Welch's t-test decides.
+
+| evidence | decision |
+|---|---|
+| 20 questions | *"not enough evidence; need 30 per arm"* |
+| 400, no real effect | *"no significant difference (p=0.078); keeping the default"* |
+| 400, real effect | *"retrieval_enabled=True scored better (0.1717 vs 0.2219, p<0.0001)"* — applied |
+
+Winners are written to `data/tuned_settings.json`, which the app reads at
+startup. **A file, not a code edit** — readable, diffable, version-controlled,
+and revertible by deleting it.
+
+### What it deliberately will not do
+
+It does not write code and it does not merge anything. It tunes parameters
+within ranges a human set, and nothing else. An agent that edits and deploys
+its own source has failure modes that compound silently, which in a system
+producing financial numbers is not worth the convenience of skipping review.
+
+The honest limit on all of it: **nothing improves until questions resolve.**
+The machinery is sound and currently has zero resolved questions. First
+signals in about a week, weights at 25, experiments at 30 per arm.
+
 ## The daily automation
 
 `.github/workflows/daily-learn.yml` runs weekdays at 03:50 UTC — shortly after
 the NSE opens at 09:15 IST.
 
 ```bash
-python scripts/daily_learn.py --all              # everything
-python scripts/daily_learn.py --resolve --retune # just the part that matters
+./scripts/install-daily.sh                       # run it every morning, unattended
+python scripts/daily_learn.py --all              # or by hand
 ```
+
+The LaunchAgent runs on your machine rather than in CI because answering
+questions needs a local model and a hosted runner has no Ollama. CI still does
+everything that needs no model: snapshot, generate, resolve, retune, discover,
+validate.
 
 What it does: resolve → retune → discover → verify → validate, then commit the
 evidence (outcomes and scores are append-only facts) and open a **pull request**
