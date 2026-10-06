@@ -102,5 +102,293 @@
       "rounds": 1
     },
     "recorded_at": "2026-09-28T17:47:21.697189+00:00"
+  },
+  "q_20260929_e092a89a26f9": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-29T03:50:56.388635+00:00"
+  },
+  "q_20261005_b80b6a6fb670": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-29T03:51:26.007050+00:00"
+  },
+  "q_20261005_a73d00753879": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-29T03:52:05.117994+00:00"
+  },
+  "q_20261005_256b56b2a8c1": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-29T03:52:42.972266+00:00"
+  },
+  "q_20261005_ab31adad6e4e": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-29T03:52:55.967558+00:00"
+  },
+  "q_20261001_0e82e957c1f3": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-29T03:53:29.361886+00:00"
+  },
+  "q_20261001_6e829638d113": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-29T03:54:34.777938+00:00"
+  },
+  "q_20261001_be30fb6736c6": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-29T03:55:23.576532+00:00"
+  },
+  "q_20260930_8254c7645041": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-29T03:56:40.263874+00:00"
+  },
+  "q_20261002_24358db4d867": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-29T03:57:15.353806+00:00"
+  },
+  "q_20260930_8bb3faf8053e": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-29T03:58:11.742642+00:00"
+  },
+  "q_20260930_7a9fc1a19c1a": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-29T03:59:02.883914+00:00"
+  },
+  "q_20261002_d66abd4977fb": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 4,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-30T06:11:28.402501+00:00"
+  },
+  "q_20260930_f41fabdae822": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-30T06:23:07.718966+00:00"
+  },
+  "q_20260930_10f765d2f075": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-30T06:53:31.432454+00:00"
+  },
+  "q_20260930_a6082bd00b55": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 4,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-30T06:58:35.206150+00:00"
+  },
+  "q_20261002_7fbc1bd4147b": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-30T07:13:10.909888+00:00"
+  },
+  "q_20261002_3ad7e7c76ce4": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 4,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-30T07:43:21.527765+00:00"
+  },
+  "q_20261002_35444170e054": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-30T07:44:16.244900+00:00"
+  },
+  "q_20261002_c968b6daff34": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-30T07:44:51.685931+00:00"
+  },
+  "q_20261007_6725b35d22ce": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-30T07:46:05.698059+00:00"
+  },
+  "q_20261003_82617089609c": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 2
+    },
+    "recorded_at": "2026-09-30T07:46:54.741096+00:00"
+  },
+  "q_20261001_ea4db60c28f8": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-30T07:47:12.896430+00:00"
+  },
+  "q_20261001_cca78536a442": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-09-30T07:48:09.206748+00:00"
+  },
+  "q_20261007_753645cf5eff": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 1
+    },
+    "recorded_at": "2026-10-01T04:57:20.780805+00:00"
+  },
+  "q_20261001_ac287ec2631b": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-10-01T05:57:58.895085+00:00"
+  },
+  "q_20261007_9c34661f1092": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 1
+    },
+    "recorded_at": "2026-10-01T07:13:39.586829+00:00"
+  },
+  "q_20261007_84b999fb3257": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 2
+    },
+    "recorded_at": "2026-10-01T08:16:50.448227+00:00"
+  },
+  "q_20261003_9c402941b90e": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-10-01T09:52:17.155823+00:00"
+  },
+  "q_20261001_301a76d2cf5e": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-10-01T10:01:42.715925+00:00"
+  },
+  "q_20261007_13caf34c1438": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 1
+    },
+    "recorded_at": "2026-10-01T10:26:11.075161+00:00"
+  },
+  "q_20261002_93faa9b2bda1": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-10-01T10:50:41.010306+00:00"
+  },
+  "q_20261008_8585669250c6": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 6,
+      "rounds": 2
+    },
+    "recorded_at": "2026-10-01T11:53:47.229879+00:00"
+  },
+  "q_20261002_93e1ce562f07": {
+    "config": {
+      "retrieval_enabled": false,
+      "min_panel": 4,
+      "rounds": 2
+    },
+    "recorded_at": "2026-10-01T12:09:50.461169+00:00"
+  },
+  "q_20261004_0674f86de01b": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 2
+    },
+    "recorded_at": "2026-10-01T12:37:38.413185+00:00"
+  },
+  "q_20261008_d243acc759e7": {
+    "config": {
+      "retrieval_enabled": true,
+      "min_panel": 4,
+      "rounds": 1
+    },
+    "recorded_at": "2026-10-01T12:48:20.757366+00:00"
   }
 }

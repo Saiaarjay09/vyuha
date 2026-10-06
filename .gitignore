@@ -22,3 +22,5 @@ data/*.parquet
 .DS_Store
 notebooks/.ipynb_checkpoints/
 council_runs/
+# Built static site; GitHub Actions regenerates and publishes it.
+site/

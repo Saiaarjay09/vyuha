@@ -255,6 +255,28 @@ vyuha council record
 
 ---
 
+## Free, always-on hosting
+
+A server on a personal machine is unreachable whenever that machine sleeps.
+**GitHub Pages is free, never sleeps, and needs no card** — it just cannot run
+Python.
+
+It turns out most of Vyuha does not need Python. The projection is a bootstrap
+over 8 KB of historical returns; portfolio risk is bucketing and arithmetic.
+Both run in the browser. So a scheduled job builds a **56 KB static site** —
+calculators, daily market figures, the latest council verdicts — and publishes
+it to Pages every weekday.
+
+```bash
+python scripts/build_site.py --out site
+```
+
+The one thing it cannot do is answer *new* questions, because the council needs
+a model at request time. It shows the latest recorded verdicts and says so.
+
+Pages on a private repo needs a paid plan; on the free tier the repo must be
+public. See [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Deploying it
 
 Runs anywhere Docker runs; `fly.toml` and `render.yaml` are included. Inference

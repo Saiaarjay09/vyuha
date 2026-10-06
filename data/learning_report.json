@@ -1,6 +1,6 @@
 {
-  "run_at": "2026-09-28T17:38:29.399394+00:00",
-  "date": "2026-09-28",
+  "run_at": "2026-10-06T03:59:55.065534+00:00",
+  "date": "2026-10-06",
   "stages": {
     "snapshot": {
       "written": 25,
@@ -35,36 +35,135 @@
     },
     "generate": {
       "generated": 12,
-      "added": 0,
-      "queued_total": 21,
+      "added": 12,
+      "queued_total": 115,
       "skipped": []
     },
     "answer": {
-      "answered": 12,
-      "queued": 21
+      "answered": 0,
+      "note": "no model"
     },
     "resolve": {
-      "checked": 49,
+      "checked": 43,
       "resolved": 0,
-      "still_pending": 49,
+      "still_pending": 43,
       "unresolvable": 0,
       "scored_forecasts": 0,
       "details": [],
       "errors": []
     },
     "retune": {
-      "updated_at": "2026-09-28T17:47:21.740010+00:00",
-      "resolved_questions": 0,
-      "members": 0,
-      "applied": {},
+      "updated_at": "2026-10-06T05:06:11.380289+00:00",
+      "resolved_questions": 42,
+      "members": 10,
+      "applied": {
+        "weights": {
+          "behavioural": 0.022588246141296047,
+          "dove": 0.03571103034816461,
+          "flows": 0.10871734748748436,
+          "global_macro": 0.046899375764124854,
+          "hawk": 0.021465007737858175,
+          "momentum_bull": 0.020110960233180115,
+          "policy": 0.24308813443119826,
+          "quant": 0.3507677933422793,
+          "red_team": 0.039220560333152216,
+          "value_bear": 0.11143154418126203
+        },
+        "bias_corrections": {
+          "behavioural": 0.0,
+          "dove": 0.979406175791439,
+          "flows": 0.44908940682264825,
+          "global_macro": 0.5102955992596956,
+          "hawk": 0.9518717377077623,
+          "momentum_bull": 1.0279402821403523,
+          "policy": 0.4988745588967886,
+          "quant": 0.690108247625783,
+          "red_team": 0.8611170147297645,
+          "value_bear": 0.9185620631168262
+        }
+      },
       "withheld": {
-        "weights": "0 resolved questions; need 25. Members stay equally weighted.",
-        "bias_corrections": "0 resolved questions; need 30.",
-        "extremise_cap": "0 resolved questions; need 50."
+        "extremise_cap": "42 resolved questions; need 50."
+      },
+      "council_vs_members": {
+        "council_brier": 0.29625898540049045,
+        "best_member_brier": 0.2772619047619048,
+        "mean_member_brier": 0.33444630952380955,
+        "aggregation_is_helping": true
       }
     },
     "experiments": {
-      "results": [],
+      "results": [
+        {
+          "setting": "retrieval_enabled",
+          "arms": [
+            {
+              "name": "retrieval_enabled",
+              "value": true,
+              "n": 23,
+              "mean_brier": 0.27188974386290904,
+              "std_error": 0.053519777055879444
+            },
+            {
+              "name": "retrieval_enabled",
+              "value": false,
+              "n": 19,
+              "mean_brier": 0.32575859357756265,
+              "std_error": 0.0698800911268563
+            }
+          ],
+          "winner": null,
+          "p_value": NaN,
+          "decision": "not enough evidence (True: 23, False: 19); need 30 per arm. Switching on fewer would be chasing noise.",
+          "applied": false
+        },
+        {
+          "setting": "min_panel",
+          "arms": [
+            {
+              "name": "min_panel",
+              "value": 4,
+              "n": 19,
+              "mean_brier": 0.32252754394632044,
+              "std_error": 0.06945390689841739
+            },
+            {
+              "name": "min_panel",
+              "value": 6,
+              "n": 23,
+              "mean_brier": 0.2745588718191527,
+              "std_error": 0.054007939225124035
+            }
+          ],
+          "winner": null,
+          "p_value": NaN,
+          "decision": "not enough evidence (4: 19, 6: 23); need 30 per arm. Switching on fewer would be chasing noise.",
+          "applied": false
+        },
+        {
+          "setting": "rounds",
+          "arms": [
+            {
+              "name": "rounds",
+              "value": 1,
+              "n": 21,
+              "mean_brier": 0.25878364792298564,
+              "std_error": 0.05850232770601702
+            },
+            {
+              "name": "rounds",
+              "value": 2,
+              "n": 21,
+              "mean_brier": 0.33373432287799526,
+              "std_error": 0.06273872527491202
+            }
+          ],
+          "winner": null,
+          "p_value": NaN,
+          "decision": "not enough evidence (1: 21, 2: 21); need 30 per arm. Switching on fewer would be chasing noise.",
+          "applied": false
+        }
+      ],
       "applied": {},
       "all_tuned": {}
     },
@@ -96,9 +195,9 @@
       "results": [
         {
           "key": "fred_indcpiallminmei",
-          "n_aligned": 102,
+          "n_aligned": 101,
           "tested": true,
-          "in_sample_rho": 0.35737221877751874,
+          "in_sample_rho": 0.3604007391582282,
           "oos_rho": 0.20813043747298682,
           "oos_p": 0.20986778977699672,
           "p_adjusted": 0.6296033693309901,
@@ -108,7 +207,7 @@
           "note": "",
           "batch_size": 6,
           "diagnostics": {
-            "n_train": 61,
+            "n_train": 60,
             "n_test": 38,
             "purge": 3,
             "lag": 1,
@@ -118,31 +217,31 @@
         },
         {
           "key": "fred_indproindmismei",
-          "n_aligned": 76,
+          "n_aligned": 75,
           "tested": true,
-          "in_sample_rho": -0.05046113306982872,
-          "oos_rho": -0.0782703886152162,
-          "oos_p": 0.6921836339404285,
-          "p_adjusted": 0.7985640155915196,
+          "in_sample_rho": 0.026218708827404475,
+          "oos_rho": -0.05067155067155067,
+          "oos_p": 0.8018146854204943,
+          "p_adjusted": 0.9363109317134938,
           "survives_fdr": false,
-          "effect_size": 0.0782703886152162,
+          "effect_size": 0.05067155067155067,
           "direction": "negative",
           "note": "",
           "batch_size": 6,
           "diagnostics": {
             "n_train": 45,
-            "n_test": 28,
+            "n_test": 27,
             "purge": 3,
             "lag": 1,
-            "sign_consistent": true,
+            "sign_consistent": false,
             "in_sample_stronger": false
           }
         },
         {
           "key": "fred_intdsrinm193n",
-          "n_aligned": 70,
+          "n_aligned": 69,
           "tested": true,
-          "in_sample_rho": 0.056796994532446875,
+          "in_sample_rho": 0.023467558860304123,
           "oos_rho": -0.29253990158112453,
           "oos_p": 0.1558756242835422,
           "p_adjusted": 0.6296033693309901,
@@ -152,7 +251,7 @@
           "note": "",
           "batch_size": 6,
           "diagnostics": {
-            "n_train": 42,
+            "n_train": 41,
             "n_test": 25,
             "purge": 3,
             "lag": 1,
@@ -177,20 +276,20 @@
         },
         {
           "key": "fred_rbinbis",
-          "n_aligned": 118,
+          "n_aligned": 117,
           "tested": true,
-          "in_sample_rho": -0.0515265506079958,
-          "oos_rho": -0.039130434782608685,
-          "oos_p": 0.7985640155915196,
-          "p_adjusted": 0.7985640155915196,
+          "in_sample_rho": -0.04025894497419298,
+          "oos_rho": -0.012403100775193798,
+          "oos_p": 0.9363109317134938,
+          "p_adjusted": 0.9363109317134938,
           "survives_fdr": false,
-          "effect_size": 0.039130434782608685,
+          "effect_size": 0.012403100775193798,
           "direction": "negative",
           "note": "",
           "batch_size": 6,
           "diagnostics": {
             "n_train": 70,
-            "n_test": 45,
+            "n_test": 44,
             "purge": 3,
             "lag": 1,
             "sign_consistent": true,
@@ -199,19 +298,19 @@
         },
         {
           "key": "fred_xtexva01inm667s",
-          "n_aligned": 117,
+          "n_aligned": 116,
           "tested": true,
-          "in_sample_rho": -0.05939987752602572,
+          "in_sample_rho": -0.04439166971136281,
           "oos_rho": 0.04411557434813248,
           "oos_p": 0.7761469843372649,
-          "p_adjusted": 0.7985640155915196,
+          "p_adjusted": 0.9363109317134938,
           "survives_fdr": false,
           "effect_size": 0.04411557434813248,
           "direction": "positive",
           "note": "",
           "batch_size": 6,
           "diagnostics": {
-            "n_train": 70,
+            "n_train": 69,
             "n_test": 44,
             "purge": 3,
             "lag": 1,
@@ -221,19 +320,19 @@
         },
         {
           "key": "fred_xtimva01inm667s",
-          "n_aligned": 117,
+          "n_aligned": 116,
           "tested": true,
-          "in_sample_rho": 0.053941037529524984,
+          "in_sample_rho": 0.06989404457435149,
           "oos_rho": 0.04918957011980268,
           "oos_p": 0.7511787562784491,
-          "p_adjusted": 0.7985640155915196,
+          "p_adjusted": 0.9363109317134938,
           "survives_fdr": false,
           "effect_size": 0.04918957011980268,
           "direction": "positive",
           "note": "",
           "batch_size": 6,
           "diagnostics": {
-            "n_train": 70,
+            "n_train": 69,
             "n_test": 44,
             "purge": 3,
             "lag": 1,

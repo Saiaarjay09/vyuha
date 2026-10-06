@@ -1,5 +1,64 @@
 # Running the Vyuha console
 
+## Free hosting that works when your machine is asleep
+
+A server on a personal Mac is unreachable whenever that Mac sleeps, which is
+most of the time. Here is what is actually free and always on.
+
+### GitHub Pages — free, permanent, never sleeps
+
+Pages serves **static files only**: no Python, no FastAPI, no server. So it
+cannot run Vyuha as it stands.
+
+But most of what people use Vyuha for does not need a server:
+
+| Feature | Static? | Why |
+|---|---|---|
+| Projections | **yes** | a bootstrap over 8 KB of returns — runs in the browser |
+| Goal planning | **yes** | the same simulation, solved backwards |
+| Portfolio risk | **yes** | bucketing plus arithmetic; nothing leaves your device |
+| Today's figures | **yes** | a JSON file a scheduled job refreshes each weekday |
+| Latest council verdicts | **yes** | published from the daily run |
+| **Answering new questions** | **no** | needs a language model at request time |
+
+`scripts/build_site.py` produces the whole thing — **56 KB** including 70 years
+of Indian equity returns — and `.github/workflows/pages.yml` rebuilds and
+publishes it every weekday.
+
+```bash
+python scripts/build_site.py --out site
+open site/index.html
+```
+
+**One requirement:** GitHub Pages on a *private* repository needs a paid plan.
+On the free tier Pages publishes only from **public** repos. Your audit for
+going public is in the git history; the access token added since then means
+the interactive instance stays protected either way.
+
+Enable it once at **Settings → Pages → Source: GitHub Actions**, and the site
+lands at `https://saiaarjay09.github.io/vyuha/`.
+
+### If you want the full interactive app hosted
+
+The council needs a model at request time, so it needs a real server plus a
+hosted inference endpoint. Honest state of the free options as of 2026-10:
+
+- **Render free tier** — 512 MB, sleeps after 15 minutes idle and wakes on
+  request with a 30–60s cold start. `render.yaml` is in the repo.
+- **Hugging Face Spaces** — the docs still list CPU Basic as free, but the
+  community reports free Docker Spaces have been discontinued. Verify before
+  relying on it.
+- **Fly.io** — small instances are cheap rather than free now.
+
+For inference, `VYUHA_LLM_BASE_URL` accepts `groq`, `openrouter`, `cerebras`
+and others, all serving open-weight models on free tiers.
+
+### What this does for your other repos
+
+The same pattern works for any of them: if a site is static, or can be made
+static by precomputing data into JSON, Pages hosts it free and forever. Only
+something that must run code *at the moment a visitor asks* needs a server.
+
 ## "Can we switch to ASP.NET so the URL is fixed?"
 
 Worth untangling, because it mixes up three separate things.

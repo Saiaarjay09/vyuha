@@ -460,5 +460,2073 @@
       "h3",
       "below"
     ]
+  },
+  {
+    "id": "q_20260930_8254c7645041",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,440 at any point on or before 2026-09-30?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,440 on any day from 2026-09-29 through 2026-09-30 inclusive.",
+    "resolution_date": "2026-09-30",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261002_24358db4d867",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,430 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,430 on any day from 2026-09-29 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20260930_8bb3faf8053e",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade below 53,820 at any point on or before 2026-09-30?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is below 53,820 on any day from 2026-09-29 through 2026-09-30 inclusive.",
+    "resolution_date": "2026-09-30",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20260930_7a9fc1a19c1a",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade below 54,040 at any point on or before 2026-09-30?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is below 54,040 on any day from 2026-09-29 through 2026-09-30 inclusive.",
+    "resolution_date": "2026-09-30",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261002_d66abd4977fb",
+    "kind": "binary",
+    "text": "Will India VIX trade below 13.5 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is below 13.5 on any day from 2026-09-29 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20260930_f41fabdae822",
+    "kind": "binary",
+    "text": "Will India VIX trade above 14.5 at any point on or before 2026-09-30?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is above 14.5 on any day from 2026-09-29 through 2026-09-30 inclusive.",
+    "resolution_date": "2026-09-30",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20260930_10f765d2f075",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade above 96.21 at any point on or before 2026-09-30?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is above 96.21 on any day from 2026-09-29 through 2026-09-30 inclusive.",
+    "resolution_date": "2026-09-30",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20260930_a6082bd00b55",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade above 96.36 at any point on or before 2026-09-30?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is above 96.36 on any day from 2026-09-29 through 2026-09-30 inclusive.",
+    "resolution_date": "2026-09-30",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261002_7fbc1bd4147b",
+    "kind": "binary",
+    "text": "Will gold trade below 4,090 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,090 on any day from 2026-09-29 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261002_3ad7e7c76ce4",
+    "kind": "binary",
+    "text": "Will gold trade above 4,200 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is above 4,200 on any day from 2026-09-29 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261002_35444170e054",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 117.9 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 117.9 on any day from 2026-09-29 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261002_c968b6daff34",
+    "kind": "binary",
+    "text": "Will Brent crude trade below 111.9 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is below 111.9 on any day from 2026-09-29 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261007_6725b35d22ce",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,310 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,310 on any day from 2026-09-30 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261003_82617089609c",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,440 at any point on or before 2026-10-03?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,440 on any day from 2026-09-30 through 2026-10-03 inclusive.",
+    "resolution_date": "2026-10-03",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261001_ea4db60c28f8",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade above 54,960 at any point on or before 2026-10-01?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is above 54,960 on any day from 2026-09-30 through 2026-10-01 inclusive.",
+    "resolution_date": "2026-10-01",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261001_cca78536a442",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade below 53,810 at any point on or before 2026-10-01?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is below 53,810 on any day from 2026-09-30 through 2026-10-01 inclusive.",
+    "resolution_date": "2026-10-01",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261007_753645cf5eff",
+    "kind": "binary",
+    "text": "Will India VIX trade below 12.4 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is below 12.4 on any day from 2026-09-30 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261001_ac287ec2631b",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade below 95.91 at any point on or before 2026-10-01?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is below 95.91 on any day from 2026-09-30 through 2026-10-01 inclusive.",
+    "resolution_date": "2026-10-01",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261007_9c34661f1092",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade below 95.71 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is below 95.71 on any day from 2026-09-30 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261007_84b999fb3257",
+    "kind": "binary",
+    "text": "Will gold trade below 4,070 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,070 on any day from 2026-09-30 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261003_9c402941b90e",
+    "kind": "binary",
+    "text": "Will gold trade below 4,130 at any point on or before 2026-10-03?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,130 on any day from 2026-09-30 through 2026-10-03 inclusive.",
+    "resolution_date": "2026-10-03",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261001_301a76d2cf5e",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 116.6 at any point on or before 2026-10-01?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 116.6 on any day from 2026-09-30 through 2026-10-01 inclusive.",
+    "resolution_date": "2026-10-01",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261007_13caf34c1438",
+    "kind": "binary",
+    "text": "Will Brent crude trade below 110.3 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is below 110.3 on any day from 2026-09-30 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261002_93faa9b2bda1",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,440 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,440 on any day from 2026-10-01 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261008_8585669250c6",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,120 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,120 on any day from 2026-10-01 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261002_93e1ce562f07",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade below 54,260 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is below 54,260 on any day from 2026-10-01 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261004_0674f86de01b",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade above 55,940 at any point on or before 2026-10-04?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is above 55,940 on any day from 2026-10-01 through 2026-10-04 inclusive.",
+    "resolution_date": "2026-10-04",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261008_d243acc759e7",
+    "kind": "binary",
+    "text": "Will India VIX trade above 14.5 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is above 14.5 on any day from 2026-10-01 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261008_18545ed9c263",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade below 95.34 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is below 95.34 on any day from 2026-10-01 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261008_ad12af9de846",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade above 96.62 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is above 96.62 on any day from 2026-10-01 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261008_b6093ab24156",
+    "kind": "binary",
+    "text": "Will gold trade below 4,070 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,070 on any day from 2026-10-01 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261002_9180458ce844",
+    "kind": "binary",
+    "text": "Will gold trade above 4,180 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is above 4,180 on any day from 2026-10-01 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261002_b0814e080088",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 115.7 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 115.7 on any day from 2026-10-01 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261002_c4346d87c6bd",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 114.8 at any point on or before 2026-10-02?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 114.8 on any day from 2026-10-01 through 2026-10-02 inclusive.",
+    "resolution_date": "2026-10-02",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261005_39f06fc5681c",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,290 at any point on or before 2026-10-05?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,290 on any day from 2026-10-02 through 2026-10-05 inclusive.",
+    "resolution_date": "2026-10-05",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261005_0a2b064b3b33",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,170 at any point on or before 2026-10-05?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,170 on any day from 2026-10-02 through 2026-10-05 inclusive.",
+    "resolution_date": "2026-10-05",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261003_18e13c6c6bb3",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade above 54,890 at any point on or before 2026-10-03?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is above 54,890 on any day from 2026-10-02 through 2026-10-03 inclusive.",
+    "resolution_date": "2026-10-03",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261003_57423774cd3d",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade below 53,740 at any point on or before 2026-10-03?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is below 53,740 on any day from 2026-10-02 through 2026-10-03 inclusive.",
+    "resolution_date": "2026-10-03",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261005_3947e44f489f",
+    "kind": "binary",
+    "text": "Will India VIX trade above 14.8 at any point on or before 2026-10-05?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is above 14.8 on any day from 2026-10-02 through 2026-10-05 inclusive.",
+    "resolution_date": "2026-10-05",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261009_1623ea3a4172",
+    "kind": "binary",
+    "text": "Will India VIX trade below 12.6 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is below 12.6 on any day from 2026-10-02 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261005_95d881ec5851",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade below 95.31 at any point on or before 2026-10-05?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is below 95.31 on any day from 2026-10-02 through 2026-10-05 inclusive.",
+    "resolution_date": "2026-10-05",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261005_eb0da541e047",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade above 96.20 at any point on or before 2026-10-05?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is above 96.20 on any day from 2026-10-02 through 2026-10-05 inclusive.",
+    "resolution_date": "2026-10-05",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261009_ca2aa04ba073",
+    "kind": "binary",
+    "text": "Will gold trade above 4,310 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is above 4,310 on any day from 2026-10-02 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261009_fe6d70eded79",
+    "kind": "binary",
+    "text": "Will gold trade above 4,210 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is above 4,210 on any day from 2026-10-02 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261003_ba6898ae8604",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 114.8 at any point on or before 2026-10-03?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 114.8 on any day from 2026-10-02 through 2026-10-03 inclusive.",
+    "resolution_date": "2026-10-03",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261005_149d7dd30096",
+    "kind": "binary",
+    "text": "Will Brent crude trade below 109.1 at any point on or before 2026-10-05?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is below 109.1 on any day from 2026-10-02 through 2026-10-05 inclusive.",
+    "resolution_date": "2026-10-05",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261006_7cbe604df5ca",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade above 22,550 at any point on or before 2026-10-06?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is above 22,550 on any day from 2026-10-03 through 2026-10-06 inclusive.",
+    "resolution_date": "2026-10-06",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261010_1c52340cf001",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade above 23,050 at any point on or before 2026-10-10?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is above 23,050 on any day from 2026-10-03 through 2026-10-10 inclusive.",
+    "resolution_date": "2026-10-10",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261006_957301a8b22f",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade above 54,830 at any point on or before 2026-10-06?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is above 54,830 on any day from 2026-10-03 through 2026-10-06 inclusive.",
+    "resolution_date": "2026-10-06",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261004_50473ba844d9",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade above 54,670 at any point on or before 2026-10-04?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is above 54,670 on any day from 2026-10-03 through 2026-10-04 inclusive.",
+    "resolution_date": "2026-10-04",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261010_3a96178f38ed",
+    "kind": "binary",
+    "text": "Will India VIX trade below 12.6 at any point on or before 2026-10-10?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is below 12.6 on any day from 2026-10-03 through 2026-10-10 inclusive.",
+    "resolution_date": "2026-10-10",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261010_ed34b2b120a2",
+    "kind": "binary",
+    "text": "Will India VIX trade above 15.0 at any point on or before 2026-10-10?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is above 15.0 on any day from 2026-10-03 through 2026-10-10 inclusive.",
+    "resolution_date": "2026-10-10",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261010_e59611dda3f6",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade above 97.03 at any point on or before 2026-10-10?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is above 97.03 on any day from 2026-10-03 through 2026-10-10 inclusive.",
+    "resolution_date": "2026-10-10",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261010_5606f2bdbe0a",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade below 94.95 at any point on or before 2026-10-10?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is below 94.95 on any day from 2026-10-03 through 2026-10-10 inclusive.",
+    "resolution_date": "2026-10-10",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261010_100f67d8d1ef",
+    "kind": "binary",
+    "text": "Will gold trade below 4,020 at any point on or before 2026-10-10?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,020 on any day from 2026-10-03 through 2026-10-10 inclusive.",
+    "resolution_date": "2026-10-10",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261010_3604bb64f690",
+    "kind": "binary",
+    "text": "Will gold trade below 4,070 at any point on or before 2026-10-10?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,070 on any day from 2026-10-03 through 2026-10-10 inclusive.",
+    "resolution_date": "2026-10-10",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261006_7fbf30da961b",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 115.5 at any point on or before 2026-10-06?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 115.5 on any day from 2026-10-03 through 2026-10-06 inclusive.",
+    "resolution_date": "2026-10-06",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261004_bbaf946784f1",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 116.8 at any point on or before 2026-10-04?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 116.8 on any day from 2026-10-03 through 2026-10-04 inclusive.",
+    "resolution_date": "2026-10-04",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261011_971f5807ea03",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade above 23,050 at any point on or before 2026-10-11?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is above 23,050 on any day from 2026-10-04 through 2026-10-11 inclusive.",
+    "resolution_date": "2026-10-11",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261007_568a311d7d4f",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade above 22,550 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is above 22,550 on any day from 2026-10-04 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261007_5ba43455be2d",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade above 54,830 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is above 54,830 on any day from 2026-10-04 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261005_1ab08cee1b09",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade above 54,670 at any point on or before 2026-10-05?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is above 54,670 on any day from 2026-10-04 through 2026-10-05 inclusive.",
+    "resolution_date": "2026-10-05",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261011_5cc115c338aa",
+    "kind": "binary",
+    "text": "Will India VIX trade above 16.3 at any point on or before 2026-10-11?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is above 16.3 on any day from 2026-10-04 through 2026-10-11 inclusive.",
+    "resolution_date": "2026-10-11",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261007_2ca6688203a5",
+    "kind": "binary",
+    "text": "Will India VIX trade below 13.7 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is below 13.7 on any day from 2026-10-04 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261011_3c659c5dd4fd",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade below 94.95 at any point on or before 2026-10-11?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is below 94.95 on any day from 2026-10-04 through 2026-10-11 inclusive.",
+    "resolution_date": "2026-10-11",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261007_95f40dcea826",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade below 95.31 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is below 95.31 on any day from 2026-10-04 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261011_b2ed4ba79ce5",
+    "kind": "binary",
+    "text": "Will gold trade below 4,020 at any point on or before 2026-10-11?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,020 on any day from 2026-10-04 through 2026-10-11 inclusive.",
+    "resolution_date": "2026-10-11",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261011_d3e087d7fc74",
+    "kind": "binary",
+    "text": "Will gold trade below 4,070 at any point on or before 2026-10-11?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,070 on any day from 2026-10-04 through 2026-10-11 inclusive.",
+    "resolution_date": "2026-10-11",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261011_1a4e01e4ffcd",
+    "kind": "binary",
+    "text": "Will Brent crude trade below 106.6 at any point on or before 2026-10-11?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is below 106.6 on any day from 2026-10-04 through 2026-10-11 inclusive.",
+    "resolution_date": "2026-10-11",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261007_f79a05df6e7e",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 115.5 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 115.5 on any day from 2026-10-04 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261006_5569d00bca46",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,510 at any point on or before 2026-10-06?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,510 on any day from 2026-10-05 through 2026-10-06 inclusive.",
+    "resolution_date": "2026-10-06",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261006_fd43484f215a",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 22,430 at any point on or before 2026-10-06?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 22,430 on any day from 2026-10-05 through 2026-10-06 inclusive.",
+    "resolution_date": "2026-10-06",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261006_8fec425997e0",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade below 54,900 at any point on or before 2026-10-06?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is below 54,900 on any day from 2026-10-05 through 2026-10-06 inclusive.",
+    "resolution_date": "2026-10-06",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261008_cde4a2e5866a",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade below 54,350 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is below 54,350 on any day from 2026-10-05 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261008_232c6e6a672d",
+    "kind": "binary",
+    "text": "Will India VIX trade above 14.6 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is above 14.6 on any day from 2026-10-05 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261012_22e13d333574",
+    "kind": "binary",
+    "text": "Will India VIX trade below 12.4 at any point on or before 2026-10-12?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is below 12.4 on any day from 2026-10-05 through 2026-10-12 inclusive.",
+    "resolution_date": "2026-10-12",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261006_4fe2d08d0349",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade above 96.23 at any point on or before 2026-10-06?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is above 96.23 on any day from 2026-10-05 through 2026-10-06 inclusive.",
+    "resolution_date": "2026-10-06",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261008_6cd382243972",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade above 96.41 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is above 96.41 on any day from 2026-10-05 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261008_0da0632cb769",
+    "kind": "binary",
+    "text": "Will gold trade below 4,130 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,130 on any day from 2026-10-05 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261008_cd1e68131f05",
+    "kind": "binary",
+    "text": "Will gold trade below 4,110 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,110 on any day from 2026-10-05 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261008_c98baf54e40a",
+    "kind": "binary",
+    "text": "Will Brent crude trade below 109.1 at any point on or before 2026-10-08?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is below 109.1 on any day from 2026-10-05 through 2026-10-08 inclusive.",
+    "resolution_date": "2026-10-08",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261012_d753d2b0c689",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 116.2 at any point on or before 2026-10-12?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 116.2 on any day from 2026-10-05 through 2026-10-12 inclusive.",
+    "resolution_date": "2026-10-12",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261009_2f77f45c2f6a",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade above 23,020 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is above 23,020 on any day from 2026-10-06 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261013_3eb817b0c8c8",
+    "kind": "binary",
+    "text": "Will the Nifty 50 trade below 21,960 at any point on or before 2026-10-13?",
+    "resolution_criteria": "Resolves YES if the recorded value of NIFTY50_CLOSE is below 21,960 on any day from 2026-10-06 through 2026-10-13 inclusive.",
+    "resolution_date": "2026-10-13",
+    "resolution_source": "NIFTY50_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261013_be017141d5cc",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade below 52,980 at any point on or before 2026-10-13?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is below 52,980 on any day from 2026-10-06 through 2026-10-13 inclusive.",
+    "resolution_date": "2026-10-13",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261009_b04ef97d6150",
+    "kind": "binary",
+    "text": "Will the Bank Nifty trade above 56,130 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of BANKNIFTY_CLOSE is above 56,130 on any day from 2026-10-06 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "BANKNIFTY_CLOSE",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261007_1eafbc6ef1c3",
+    "kind": "binary",
+    "text": "Will India VIX trade above 15.1 at any point on or before 2026-10-07?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is above 15.1 on any day from 2026-10-06 through 2026-10-07 inclusive.",
+    "resolution_date": "2026-10-07",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h1",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261009_2b1aaf5e829f",
+    "kind": "binary",
+    "text": "Will India VIX trade below 13.7 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of INDIA_VIX is below 13.7 on any day from 2026-10-06 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "INDIA_VIX",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261009_8b8f3bbfb74b",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade above 96.97 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is above 96.97 on any day from 2026-10-06 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261009_687bc5f38c08",
+    "kind": "binary",
+    "text": "Will the rupee (USD/INR) trade above 96.49 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of USDINR is above 96.49 on any day from 2026-10-06 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "USDINR",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261009_8c2079132e40",
+    "kind": "binary",
+    "text": "Will gold trade above 4,190 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is above 4,190 on any day from 2026-10-06 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "above"
+    ]
+  },
+  {
+    "id": "q_20261013_9c07c6b245c2",
+    "kind": "binary",
+    "text": "Will gold trade below 4,120 at any point on or before 2026-10-13?",
+    "resolution_criteria": "Resolves YES if the recorded value of GOLD_USD is below 4,120 on any day from 2026-10-06 through 2026-10-13 inclusive.",
+    "resolution_date": "2026-10-13",
+    "resolution_source": "GOLD_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261009_a364bf007d14",
+    "kind": "binary",
+    "text": "Will Brent crude trade below 111.0 at any point on or before 2026-10-09?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is below 111.0 on any day from 2026-10-06 through 2026-10-09 inclusive.",
+    "resolution_date": "2026-10-09",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h3",
+      "below"
+    ]
+  },
+  {
+    "id": "q_20261013_86ff91b736e5",
+    "kind": "binary",
+    "text": "Will Brent crude trade above 121.4 at any point on or before 2026-10-13?",
+    "resolution_criteria": "Resolves YES if the recorded value of BRENT_USD is above 121.4 on any day from 2026-10-06 through 2026-10-13 inclusive.",
+    "resolution_date": "2026-10-13",
+    "resolution_source": "BRENT_USD",
+    "outcomes": null,
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "unit": null,
+    "tags": [
+      "auto",
+      "h7",
+      "above"
+    ]
   }
 ]
