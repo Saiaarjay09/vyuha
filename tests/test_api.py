@@ -9,10 +9,17 @@ app proves almost nothing about whether its routes work.
 from __future__ import annotations
 
 import pytest
-from fastapi.testclient import TestClient
 
-from vyuha.api.server import app
-from vyuha.config import settings
+# The web layer is an OPTIONAL extra. Importing it unconditionally made the
+# entire suite fail at collection when only [dev] was installed -- which is
+# exactly what CI did, so every test "failed" for a reason unrelated to any of
+# them. Skipping cleanly keeps the failure proportionate to the cause.
+pytest.importorskip("fastapi", reason="install the [api] extra to run API tests")
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+from vyuha.api.server import app  # noqa: E402
+from vyuha.config import settings  # noqa: E402
 
 
 @pytest.fixture

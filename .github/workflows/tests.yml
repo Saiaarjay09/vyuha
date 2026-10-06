@@ -24,7 +24,10 @@ jobs:
           cache: pip
       - run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          # [api] as well as [dev]: tests/test_api.py imports fastapi, and
+          # installing only [dev] made the whole suite fail at collection
+          # while passing locally, where [api] happened to be present.
+          pip install -e ".[api,dev]"
       # The suite is offline by design: no test may depend on a live endpoint,
       # because a source going down should fail ingestion, not the build.
       - run: pytest -q
