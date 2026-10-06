@@ -64,7 +64,16 @@ def collect_returns() -> dict:
 
 
 def collect_market() -> dict:
-    """Today's figures, as recorded by the daily snapshot."""
+    """Today's figures.
+
+    Prefers the point-in-time store, then falls back to fetching live.
+
+    The fallback is not a nicety. The build runs on a GitHub runner from a
+    fresh checkout, where vyuha.duckdb and council_runs/ do not exist -- both
+    are gitignored -- so the store is always empty there. Reading only the
+    store published a site whose "Today's figures" tab was blank, which is the
+    tab most people would open first.
+    """
     from vyuha.store.pit import PITStore
 
     rows = []
@@ -84,8 +93,64 @@ def collect_market() -> dict:
                     "date": str(r["event_date"]),
                 })
     except Exception as exc:  # noqa: BLE001
-        print(f"  ! market snapshot unavailable: {str(exc)[:70]}")
-    return {"as_of": dt.datetime.now(dt.UTC).isoformat(), "series": rows}
+        print(f"  ! store unavailable ({str(exc)[:50]}), fetching live")
+
+    source = "store"
+    if not rows:
+        # Guessing the source from the row count was wrong and reported "store"
+        # for data that had just been fetched live. Track it, do not infer it.
+        rows = _fetch_market_live()
+        source = "live"
+    return {"as_of": dt.datetime.now(dt.UTC).isoformat(), "series": rows,
+            "source": source}
+
+
+def _fetch_market_live() -> list[dict]:
+    """Fetch today's figures directly, for environments with no stored history."""
+    out: list[dict] = []
+    today = str(dt.date.today())
+
+    def add(series: str, value, unit: str, source: str) -> None:
+        try:
+            out.append({"series": series, "value": float(value), "unit": unit,
+                        "source": source, "date": today})
+        except (TypeError, ValueError):
+            pass
+
+    try:
+        from vyuha.ingest.rbi import rbi_current_rates
+
+        for _, r in rbi_current_rates().iterrows():
+            add(str(r["series_id"]), r["value"], str(r["unit"]), "RBI")
+    except Exception as exc:  # noqa: BLE001
+        print(f"  ! RBI live: {str(exc)[:60]}")
+
+    try:
+        from vyuha.ingest.base import NSESession
+        from vyuha.ingest.sources import nse_all_indices
+
+        with NSESession() as s:
+            idx = nse_all_indices(s)
+        for name, sid in (("NIFTY 50", "NIFTY50_CLOSE"),
+                          ("NIFTY BANK", "BANKNIFTY_CLOSE"),
+                          ("INDIA VIX", "INDIA_VIX"),
+                          ("NIFTY MIDCAP 100", "NIFTY_MIDCAP_CLOSE")):
+            row = idx[idx["index"].str.upper() == name]
+            if len(row):
+                add(sid, row["last"].iloc[0], "index", "NSE")
+    except Exception as exc:  # noqa: BLE001
+        print(f"  ! NSE live: {str(exc)[:60]}")
+
+    try:
+        from vyuha.ingest.globalmarkets import global_snapshot
+
+        for _, r in global_snapshot(["sp500", "us_10y", "dollar_index"]).iterrows():
+            if r["value"] is not None and not r["error"]:
+                add(str(r["series"]).upper(), r["value"], str(r["unit"]), "FRED")
+    except Exception as exc:  # noqa: BLE001
+        print(f"  ! FRED live: {str(exc)[:60]}")
+
+    return out
 
 
 def collect_council() -> dict:
@@ -93,7 +158,20 @@ def collect_council() -> dict:
     questions -- that needs a model at request time -- so it shows what the
     council last said rather than pretending to be live."""
     runs = []
+    # council_runs/ is gitignored, so on a CI runner it does not exist. A
+    # summary committed by the daily job is the only way those verdicts can
+    # reach a build that never sees the machine which produced them.
+    summary = ROOT / "data" / "council_summary.json"
+    if summary.exists():
+        try:
+            return {"runs": json.loads(summary.read_text())[:20],
+                    "source": "published summary"}
+        except Exception:  # noqa: BLE001
+            pass
+
     log_dir = ROOT / "council_runs"
+    if not log_dir.exists():
+        return {"runs": [], "note": "no verdicts published yet"}
     files = sorted(log_dir.glob("*.json"), key=lambda p: p.stat().st_mtime,
                    reverse=True)
     for f in files:

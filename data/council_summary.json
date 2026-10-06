@@ -1,0 +1,162 @@
+[
+  {
+    "question": "Will India VIX trade above 14.5 at any point on or before 2026-10-08?",
+    "probability": 0.005867502572241044,
+    "dispersion": 0.08499999999999996,
+    "members": 4,
+    "resolves": "2026-10-08",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will the Bank Nifty trade above 55,940 at any point on or before 2026-10-04?",
+    "probability": 0.007897223193574167,
+    "dispersion": 0.06291528696058955,
+    "members": 4,
+    "resolves": "2026-10-04",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will the Bank Nifty trade below 54,260 at any point on or before 2026-10-02?",
+    "probability": 0.013233556057054001,
+    "dispersion": 0.14430292212333518,
+    "members": 10,
+    "resolves": "2026-10-02",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will the Nifty 50 trade below 22,120 at any point on or before 2026-10-08?",
+    "probability": 0.010345650202249914,
+    "dispersion": 0.058223706512038544,
+    "members": 6,
+    "resolves": "2026-10-08",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will the Nifty 50 trade below 22,440 at any point on or before 2026-10-02?",
+    "probability": 0.0021726629814339655,
+    "dispersion": 0.16770509831248423,
+    "members": 9,
+    "resolves": "2026-10-02",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will Brent crude trade below 110.3 at any point on or before 2026-10-07?",
+    "probability": 0.007927603332669016,
+    "dispersion": 0.09954898291795852,
+    "members": 6,
+    "resolves": "2026-10-07",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will Brent crude trade above 116.6 at any point on or before 2026-10-01?",
+    "probability": 0.009934745615115963,
+    "dispersion": 0.05810909280540065,
+    "members": 6,
+    "resolves": "2026-10-01",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will gold trade below 4,130 at any point on or before 2026-10-03?",
+    "probability": 0.015092108875544285,
+    "dispersion": 0.11758684733704984,
+    "members": 6,
+    "resolves": "2026-10-03",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will gold trade below 4,070 at any point on or before 2026-10-07?",
+    "probability": 0.020649477057725033,
+    "dispersion": 0.0,
+    "members": 4,
+    "resolves": "2026-10-07",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will the rupee (USD/INR) trade below 95.71 at any point on or before 2026-10-07?",
+    "probability": 0.009149529785412057,
+    "dispersion": 0.09429563439877091,
+    "members": 4,
+    "resolves": "2026-10-07",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will the rupee (USD/INR) trade below 95.91 at any point on or before 2026-10-01?",
+    "probability": 0.005862728941183923,
+    "dispersion": 0.10198039027185568,
+    "members": 6,
+    "resolves": "2026-10-01",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will India VIX trade below 12.4 at any point on or before 2026-10-07?",
+    "probability": 0.01342521056979732,
+    "dispersion": 0.05678908345800274,
+    "members": 4,
+    "resolves": "2026-10-07",
+    "asked": "2026-10-01"
+  },
+  {
+    "question": "Will the Bank Nifty trade below 53,810 at any point on or before 2026-10-01?",
+    "probability": 0.017654275278560772,
+    "dispersion": 0.13457340004622012,
+    "members": 6,
+    "resolves": "2026-10-01",
+    "asked": "2026-09-30"
+  },
+  {
+    "question": "Will the Bank Nifty trade above 54,960 at any point on or before 2026-10-01?",
+    "probability": 0.018683771420912175,
+    "dispersion": 0.07889866919029746,
+    "members": 4,
+    "resolves": "2026-10-01",
+    "asked": "2026-09-30"
+  },
+  {
+    "question": "Will the Nifty 50 trade below 22,440 at any point on or before 2026-10-03?",
+    "probability": 0.026039856200729513,
+    "dispersion": 0.06454972243679027,
+    "members": 4,
+    "resolves": "2026-10-03",
+    "asked": "2026-09-30"
+  },
+  {
+    "question": "Will the Nifty 50 trade below 22,310 at any point on or before 2026-10-07?",
+    "probability": 0.020847761138681038,
+    "dispersion": 0.12489995996796796,
+    "members": 9,
+    "resolves": "2026-10-07",
+    "asked": "2026-09-30"
+  },
+  {
+    "question": "Will Brent crude trade below 111.9 at any point on or before 2026-10-02?",
+    "probability": 0.02435506952188433,
+    "dispersion": 0.040414518843273774,
+    "members": 4,
+    "resolves": "2026-10-02",
+    "asked": "2026-09-30"
+  },
+  {
+    "question": "Will Brent crude trade above 117.9 at any point on or before 2026-10-02?",
+    "probability": 0.019965237059704932,
+    "dispersion": 0.09867454923467685,
+    "members": 6,
+    "resolves": "2026-10-02",
+    "asked": "2026-09-30"
+  },
+  {
+    "question": "Will gold trade above 4,200 at any point on or before 2026-10-02?",
+    "probability": 0.018656168772853005,
+    "dispersion": 0.11126972805283733,
+    "members": 7,
+    "resolves": "2026-10-02",
+    "asked": "2026-09-30"
+  },
+  {
+    "question": "Will gold trade below 4,090 at any point on or before 2026-10-02?",
+    "probability": 0.03302620863084418,
+    "dispersion": 0.1505637554142578,
+    "members": 9,
+    "resolves": "2026-10-02",
+    "asked": "2026-09-30"
+  }
+]

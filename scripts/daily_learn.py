@@ -184,6 +184,24 @@ def main() -> int:
             print(f"  FAILED: {type(exc).__name__}: {exc}")
             report["stages"]["validate"] = {"error": str(exc)}
 
+    # Publish a verdict summary for the static site. council_runs/ is
+    # gitignored and never reaches a CI checkout, so without this the
+    # published site's council tab is permanently empty.
+    try:
+        from scripts.build_site import collect_council  # noqa: PLC0415
+
+        import_ok = True
+    except Exception:  # noqa: BLE001
+        import_ok = False
+    if import_ok:
+        try:
+            runs = collect_council().get("runs", [])
+            (ROOT / "data" / "council_summary.json").write_text(
+                json.dumps(runs[:20], indent=2, default=str))
+            print(f"\npublished {len(runs[:20])} verdict(s) for the static site")
+        except Exception as exc:  # noqa: BLE001
+            print(f"\ncould not publish verdict summary: {str(exc)[:70]}")
+
     out = ROOT / args.out
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, default=str))
