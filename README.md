@@ -1,9 +1,9 @@
 # Vyuha
 
-**Live: https://haven.taila6d3cb.ts.net/vyuha** (needs an access key — ask me
-for the link with its `?key=`) — plain-English usage guide in
-[HOW_TO_USE.txt](HOW_TO_USE.txt). (The site runs on a personal machine; if it is
-asleep, the page will not load.)
+**Live: https://saiaarjay09.github.io/vyuha/** — calculators, daily market
+figures and the council's latest verdicts. Runs on GitHub Pages, so it is
+always up and needs nothing of yours. Plain-English guide in
+[HOW_TO_USE.txt](HOW_TO_USE.txt).
 
 **व्यूह** — *a battle formation: many independent units, each with its own
 vantage, arrayed into a single structure.* It also means, simply, *array*.
@@ -294,11 +294,17 @@ inventing a number. See [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Web console
 
-Live at **https://haven.taila6d3cb.ts.net/vyuha**. Written for someone who has
-never used a risk system: you get a plain-English verdict ("Unlikely — about a
-23% chance, roughly 1 in 4") before any number, a sentence on whether the
-advisors agreed, and everything technical one click away rather than in your
-face. Non-technical usage guide: [HOW_TO_USE.txt](HOW_TO_USE.txt).
+The full interactive console — the one that answers *new* questions — needs a
+language model running at the moment you ask, so it is not on the static site.
+Run it locally with `./scripts/serve.sh`, or deploy it (see
+[docs/DEPLOY.md](docs/DEPLOY.md)). The published site at
+**https://saiaarjay09.github.io/vyuha/** carries everything that does work
+without one.
+
+Both are written for someone who has never used a risk system: a plain-English
+verdict ("Unlikely — about a 23% chance, roughly 1 in 4") before any number, a
+sentence on whether the advisors agreed, and everything technical one click
+away rather than in your face. Non-technical usage guide: [HOW_TO_USE.txt](HOW_TO_USE.txt).
 
 ```bash
 ./scripts/serve.sh                      # http://127.0.0.1:8601

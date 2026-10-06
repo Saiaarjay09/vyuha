@@ -6,18 +6,30 @@
 WEBSITE
 --------------------------------------------------------------------------------
 
-  https://haven.taila6d3cb.ts.net/vyuha
+  https://saiaarjay09.github.io/vyuha/
 
-  Open it in any browser, on a phone or a computer. Nothing to install and no
-  account needed.
+  Open it in any browser, on a phone or a computer. Nothing to install, no
+  account, and nothing to pay. It is hosted on GitHub Pages, so it is always
+  up - it does not depend on anyone's computer being switched on.
 
-  The link you were given includes a "?key=..." part. Open it once WITH that
-  part and the key is remembered on that device; afterwards the plain address
-  works. Without it, you can still see the page but not ask questions - every
-  question runs an AI model on a personal machine, so access is limited.
+  WHAT THE WEBSITE CAN DO
 
-  Note: the site runs on a personal Mac. If that machine is asleep or offline,
-  the page will not load. It is not a hosted commercial service.
+  Plan a goal, project an investment, and check how risky your holdings are.
+  All three run inside your own browser: the numbers you type are never sent
+  anywhere. It also shows today's market figures and the council's most recent
+  verdicts, both refreshed automatically every weekday.
+
+  WHAT IT CANNOT DO
+
+  Answer a NEW question. The council is ten AI advisors, and that needs a
+  language model running at the moment you ask - which a free static site
+  cannot provide. It shows the latest recorded verdicts instead, and says so.
+
+  To ask your own questions you run Vyuha yourself; see RUNNING IT YOURSELF
+  below.
+
+  Note: this is free, open-source software, not a commercial service. Nobody
+  is monitoring it and nothing is guaranteed.
 
 
 WHAT IT IS
