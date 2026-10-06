@@ -35,7 +35,11 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+# "." as well as "src": tests/test_site.py imports scripts.build_site, and the
+# repo root is only implicitly on sys.path in some pytest invocations. It was
+# present locally and absent in CI, so the suite passed here and failed there
+# with ModuleNotFoundError.
+pythonpath = [".", "src"]
 filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.ruff]
