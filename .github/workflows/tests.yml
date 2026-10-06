@@ -30,5 +30,33 @@ jobs:
           pip install -e ".[api,dev]"
       # The suite is offline by design: no test may depend on a live endpoint,
       # because a source going down should fail ingestion, not the build.
-      - run: pytest -q
-      - run: ruff check src tests
+      #
+      # Failures are re-emitted as GitHub error annotations. Workflow logs need
+      # an authenticated token to read, so a bare "exit code 1" is all an
+      # outside observer gets -- which turns a one-line assertion failure into
+      # a guessing game. Annotations are visible without auth.
+      - name: Tests
+        run: |
+          set +e
+          pytest -q --tb=short -p no:cacheprovider 2>&1 | tee /tmp/pytest.txt
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            echo "::group::pytest output"
+            cat /tmp/pytest.txt
+            echo "::endgroup::"
+            tail -40 /tmp/pytest.txt | while IFS= read -r line; do
+              printf '::error::%s\n' "${line//$'\r'/}"
+            done
+          fi
+          exit "$code"
+      - name: Lint
+        run: |
+          set +e
+          ruff check src tests --output-format concise 2>&1 | tee /tmp/ruff.txt
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            head -20 /tmp/ruff.txt | while IFS= read -r line; do
+              printf '::error::%s\n' "$line"
+            done
+          fi
+          exit "$code"
