@@ -10,10 +10,10 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - "src/vyuha/site.py"
-      - "scripts/build_site.py"
-      - ".github/workflows/pages.yml"
+    # Deliberately NOT path-filtered. A narrow filter meant an ordinary commit
+    # could not trigger a rebuild, so there was no way to publish after
+    # enabling Pages short of editing one of the listed files. The build takes
+    # about two minutes and the site should track main anyway.
 
 permissions:
   contents: read
